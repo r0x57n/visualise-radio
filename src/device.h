@@ -15,7 +15,6 @@ private:
     void close();
 public:
     int val;
-    std::mutex reading;
 
     Device();
     Device(int index);

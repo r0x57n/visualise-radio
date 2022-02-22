@@ -90,47 +90,40 @@ void Device::close() {
 }
 
 static void callback(unsigned char *buf, uint32_t len, void *ctx) {
-    printf("entered callback");
+    printf(".");
     fflush(stdout);
 
     Device *dev = static_cast<Device *>(ctx);
     dev->val += 1;
+
+    if (dev->val >= 50)
+        dev->stopReading();
 }
 
 void startReading(void *ctx) {
     msg("reading...");
 
     Device *dev = static_cast<Device *>(ctx);
-    //const std::lock_guard<std::mutex> lock(dev->reading);
 
     rtlsdr_read_async(dev->getDev(), callback, dev, 0, 1);
 
-    msg("done reading...");
+    msg("\ndone reading...");
+}
+
+void Device::stopReading() {
+    rtlsdr_cancel_async(this->dev);
 }
 
 void Device::readSamples() {
     msg("start reading thread");
 
+    // buffer has to be reset before reading
     rtlsdr_reset_buffer(this->dev);
 
     std::thread first (startReading, this);
-    first.detach();
+    first.join();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-    rtlsdr_cancel_async(this->dev);
-
-    printf("val: %d", this->val);
-
-    /*while (true) {
-        msg("waiting for samples");
-        const std::lock_guard<std::mutex> lock(reading);
-        msg("released from reading");
-    }*/
-}
-
-void Device::stopReading() {
-    rtlsdr_cancel_async(this->dev);
+    msg("finished reading");
 }
 
 rtlsdr_dev_t* Device::getDev() {
