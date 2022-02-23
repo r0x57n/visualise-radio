@@ -15,13 +15,11 @@ void msg(std::string msg) {
 
 Device::Device() {
     this->index = this->getDeviceIndex();
-    this->val = 0;
     this->init();
 }
 
 Device::Device(int index) {
     this->index = index;
-    this->val = 0;
     this->init();
 }
 
@@ -48,6 +46,9 @@ void Device::init() {
 
     if (rtlsdr_set_tuner_bandwidth(this->dev, 0) < 0)
         fail("Failed to set bandwidth automatic");
+
+    if (rtlsdr_set_freq_correction(this->dev, 60) < 0)
+        fail("Failed to set freq correction");
 }
 
 int Device::getDeviceIndex() {
@@ -90,14 +91,18 @@ void Device::close() {
 }
 
 static void callback(unsigned char *buf, uint32_t len, void *ctx) {
-    printf(".");
-    fflush(stdout);
-
     Device *dev = static_cast<Device *>(ctx);
-    dev->val += 1;
+    dev->samplesToRead -= len;
 
-    if (dev->val >= 50)
+    if (dev->samplesToRead <= 0)
         dev->stopReading();
+
+    std::vector<double> read;
+    for (int i = 0; i < (int)len; i++) {
+        read.push_back((double) buf[i]);
+    }
+
+    dev->samples.push_back(read);
 }
 
 void startReading(void *ctx) {
@@ -107,18 +112,21 @@ void startReading(void *ctx) {
 
     rtlsdr_read_async(dev->getDev(), callback, dev, 0, 1);
 
-    msg("\ndone reading...");
+    printf("\nRead %ld samples...\n", dev->samples.size());
+    fflush(stdout);
 }
 
 void Device::stopReading() {
     rtlsdr_cancel_async(this->dev);
 }
 
-void Device::readSamples() {
+void Device::readSamples(int amount) {
     msg("start reading thread");
 
     // buffer has to be reset before reading
     rtlsdr_reset_buffer(this->dev);
+
+    this->samplesToRead = amount;
 
     std::thread first (startReading, this);
     first.join();

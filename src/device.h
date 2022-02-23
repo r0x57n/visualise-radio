@@ -2,6 +2,7 @@
 #define DEVICE_H_
 
 #include <mutex>
+#include <vector>
 #include "rtl-sdr.h"
 
 class Device {
@@ -14,13 +15,14 @@ private:
     int getDeviceIndex();
     void close();
 public:
-    int val;
+    std::vector<std::vector<double>> samples;
+    int samplesToRead;
 
     Device();
     Device(int index);
     ~Device();
 
-    void readSamples();
+    void readSamples(int amount);
     void stopReading();
     void printDebug();
 
