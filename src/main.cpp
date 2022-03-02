@@ -6,31 +6,50 @@
 #include "rtl-sdr.h"
 #include "device.h"
 #include <complex>
+#include <fftw3.h>
 
 int main(int argc, char *argv[]) {
-    /*std::vector<std::pair<int, int>> data;
-
-    for (int i = 0; i < 100; i++) {
-        data.push_back(std::make_pair(rand() % 10, - rand() % 50));
-    }
-
-    Gnuplot gp;
-
-    gp << "plot " << gp.file1d(data) << " with lines title 'test'\n" << std::endl;*/
 
     Device dev(0);
-    dev.readSamples(256);
+    std::vector<std::complex<double>> test = dev.readSamples(16384);
+    int N = test.size();
 
-    for (int i = 0; i < (int)dev.samples[0].size() / 2; i += 2) {
-        double byte1 = (dev.samples[0][i] / 127.5) - 1;
-        double byte2 = (dev.samples[0][i+1] / 127.5) - 1;
-        std::complex<double> test;
-        test.real(byte1);
-        test.imag(byte2);
+    std::vector<double> data;
+    fftw_complex in[N];
 
-        //std::complex<double> test(byte1, byte2);
-        std::cout << test << " (" << abs(test) << ", " << arg(test) << ")" << std::endl;
+    for (int i = 0; i < test.size(); i++) {
+        data.push_back(test[i].real());
+        in[i][0] = test[i].real();
+        in[i][1] = test[i].imag();
     }
+
+    Gnuplot gp_time;
+    gp_time << "plot " << gp_time.file1d(data) << " with lines title 'test'\n" << std::endl;
+
+
+    fftw_complex out[N];
+    fftw_plan p;
+
+    //in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * data.size());
+    //in = reinterpret_cast<fftw_complex*>(&test);
+    //memcpy( &in, &test, sizeof( fftw_complex ) * N);
+    //out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+
+    p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(p);
+
+    std::vector<double> data2;
+
+    for (int i = 0; i < N; i++) {
+        data2.push_back(abs(out[i][0]));
+    }
+
+    Gnuplot gp_freq;
+    gp_freq << "plot " << gp_freq.file1d(data2) << " with lines title 'test'\n" << std::endl;
+
+    fftw_destroy_plan(p);
+    //fftw_free(in);
+    //fftw_free(out);
 
     return EXIT_SUCCESS;
 }

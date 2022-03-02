@@ -41,11 +41,11 @@ void Device::init() {
     if (rtlsdr_set_sample_rate(this->dev, 1.024e6) < 0)
         fail("Failed to set sample rate");
 
-    if (rtlsdr_set_tuner_gain_mode(this->dev, 0) < 0)
-        fail("Failed to set gain mode automatic");
+    // if (rtlsdr_set_tuner_gain_mode(this->dev, 0) < 0)
+    //     fail("Failed to set gain mode automatic");
 
-    if (rtlsdr_set_tuner_bandwidth(this->dev, 0) < 0)
-        fail("Failed to set bandwidth automatic");
+    // if (rtlsdr_set_tuner_bandwidth(this->dev, 0) < 0)
+    //     fail("Failed to set bandwidth automatic");
 
     if (rtlsdr_set_freq_correction(this->dev, 60) < 0)
         fail("Failed to set freq correction");
@@ -97,12 +97,14 @@ static void callback(unsigned char *buf, uint32_t len, void *ctx) {
     if (dev->samplesToRead <= 0)
         dev->stopReading();
 
-    std::vector<double> read;
+    std::vector<unsigned char> read;
     for (int i = 0; i < (int)len; i++) {
-        read.push_back((double) buf[i]);
+        read.push_back(buf[i]);
     }
 
-    dev->samples.push_back(read);
+    std::cout << "read: " << len << std::endl;
+
+    //dev->samples.push_back(read);
 }
 
 void startReading(void *ctx) {
@@ -110,7 +112,7 @@ void startReading(void *ctx) {
 
     Device *dev = static_cast<Device *>(ctx);
 
-    rtlsdr_read_async(dev->getDev(), callback, dev, 0, 1);
+    rtlsdr_read_async(dev->getDev(), callback, dev, 0, 0);
 
     printf("\nRead %ld samples...\n", dev->samples.size());
     fflush(stdout);
@@ -120,18 +122,42 @@ void Device::stopReading() {
     rtlsdr_cancel_async(this->dev);
 }
 
-void Device::readSamples(int amount) {
-    msg("start reading thread");
-
+std::vector<std::complex<double>> Device::readSamples(int amount) {
     // buffer has to be reset before reading
     rtlsdr_reset_buffer(this->dev);
 
+    amount *= 2; // complex is real+imag
     this->samplesToRead = amount;
 
-    std::thread first (startReading, this);
-    first.join();
+    // std::thread first (startReading, this);
+    // first.join();
 
-    msg("finished reading");
+    uint8_t *buf = (uint8_t*)malloc(amount * sizeof(uint8_t));
+    int nread = 0;
+    int res = rtlsdr_read_sync(this->dev, buf, amount, &nread);
+
+    if (nread != amount)
+        fail("couldn't read the requested amount");
+
+    return bytesToIq(buf, amount);
+}
+
+std::vector<std::complex<double>> Device::bytesToIq(uint8_t *buf, int size) {
+    std::vector<std::complex<double>> test;
+
+    for (int i = 0; i < size/2; i++) {
+        float byte1 = (float) buf[2*i];
+        float byte2 = (float) buf[2*i+1];
+
+        std::complex<double> test2((byte1 / 127.5 - 1.0), (byte2 / 127.5 - 1.0));
+        test.push_back(test2);
+
+        //std::cout << test << std::endl;
+    }
+
+    free(buf);
+
+    return test;
 }
 
 rtlsdr_dev_t* Device::getDev() {

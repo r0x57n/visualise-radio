@@ -2,6 +2,7 @@
 #define DEVICE_H_
 
 #include <mutex>
+#include <complex>
 #include <vector>
 #include "rtl-sdr.h"
 
@@ -15,14 +16,15 @@ private:
     int getDeviceIndex();
     void close();
 public:
-    std::vector<std::vector<double>> samples;
+    std::vector<uint8_t> samples;
     int samplesToRead;
 
     Device();
     Device(int index);
     ~Device();
 
-    void readSamples(int amount);
+    std::vector<std::complex<double>> readSamples(int amount);
+    std::vector<std::complex<double>> bytesToIq(uint8_t *buf, int size);
     void stopReading();
     void printDebug();
 
