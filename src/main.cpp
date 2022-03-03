@@ -7,7 +7,10 @@
 #include "device.h"
 #include "graph.h"
 
-void fft(std::vector<std::complex<double>>& data, fftw_complex* out) {
+using std::vector;
+using std::complex;
+
+void fft(vector<complex<double>>& data, fftw_complex* out) {
     int N = data.size();
     fftw_complex* in;
     fftw_plan p;
@@ -24,9 +27,9 @@ int main(int argc, char *argv[]) {
     int N = pow(2, 14);
 
     Device dev(0);
-    std::vector<std::complex<double>> samps = dev.readSamples(N);
+    vector<complex<double>> samps = dev.read_samples_sync(N);
 
-    std::vector<double> data;
+    vector<double> data;
 
     for (int i = 0; i < (int)samps.size(); i++) {
         data.push_back(samps[i].real());
@@ -35,15 +38,15 @@ int main(int argc, char *argv[]) {
     fftw_complex out[N];
     fft(samps, out);
 
-    std::vector<double> data2;
+    vector<double> data2;
 
     for (int i = 0; i < N; i++) {
         data2.push_back(fabs(out[i][0]));
     }
 
     Graph graph;
-    graph.plot(data);
-    graph.plot(data2);
+    graph.plot(data, "Time domain");
+    graph.plot(data2, "Frequency domain");
 
     return EXIT_SUCCESS;
 }
