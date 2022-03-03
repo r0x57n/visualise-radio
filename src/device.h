@@ -1,7 +1,6 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
-#include <mutex>
 #include <complex>
 #include <vector>
 #include "rtl-sdr.h"

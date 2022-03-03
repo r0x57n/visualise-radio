@@ -44,11 +44,13 @@ void Device::init() {
     // if (rtlsdr_set_tuner_gain_mode(this->dev, 0) < 0)
     //     fail("Failed to set gain mode automatic");
 
-    // if (rtlsdr_set_tuner_bandwidth(this->dev, 0) < 0)
-    //     fail("Failed to set bandwidth automatic");
+    if (rtlsdr_set_tuner_bandwidth(this->dev, 0) < 0)
+        fail("Failed to set bandwidth automatic");
 
     if (rtlsdr_set_freq_correction(this->dev, 60) < 0)
         fail("Failed to set freq correction");
+
+    rtlsdr_reset_buffer(this->dev); // has to be reset before reading samples
 }
 
 int Device::getDeviceIndex() {
@@ -87,17 +89,17 @@ void Device::close() {
     int ret = rtlsdr_close(this->dev);
 
     if (ret < 0)
-        fail("Failed to close device, already closed or never openede...");
+        fail("Failed to close device, already closed or never opened...");
 }
 
-static void callback(unsigned char *buf, uint32_t len, void *ctx) {
+static void callback(uint8_t *buf, uint32_t len, void *ctx) {
     Device *dev = static_cast<Device *>(ctx);
     dev->samplesToRead -= len;
 
     if (dev->samplesToRead <= 0)
         dev->stopReading();
 
-    std::vector<unsigned char> read;
+    std::vector<uint8_t> read;
     for (int i = 0; i < (int)len; i++) {
         read.push_back(buf[i]);
     }
@@ -123,10 +125,7 @@ void Device::stopReading() {
 }
 
 std::vector<std::complex<double>> Device::readSamples(int amount) {
-    // buffer has to be reset before reading
-    rtlsdr_reset_buffer(this->dev);
-
-    amount *= 2; // complex is real+imag
+    amount *= 2; // samples are complex (real/imag)
     this->samplesToRead = amount;
 
     // std::thread first (startReading, this);
