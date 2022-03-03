@@ -5,33 +5,40 @@
 #include <vector>
 #include "rtl-sdr.h"
 
+using std::vector;
+using std::complex;
+
 class Device {
 private:
-    rtlsdr_dev_t *dev; // actual device
-    int index;     // index of device from rtl-sdr.h ordering
+    int index;
+    rtlsdr_dev_t *dev;
 
-    /* Initialize/cleanup */
     void init();
-    int getDeviceIndex();
-    void close();
+    vector<complex<double>> bytes_to_iq(uint8_t *buf, int size);
 public:
-    std::vector<uint8_t> samples;
-    int samplesToRead;
+    vector<uint8_t> samples;
 
     Device();
     Device(int index);
     ~Device();
 
-    std::vector<std::complex<double>> readSamples(int amount);
-    std::vector<std::complex<double>> bytesToIq(uint8_t *buf, int size);
-    void stopReading();
-    void printDebug();
+    /* Functionality */
+    vector<complex<double>> read_samples_sync(int amount);
+    void read_samples_async();
+    void stop_reading_async();
+
+    /* Setters */
+    void center_freq(int freq);
+    void sample_rate(int sr);
+    void freq_corr(int fc);
+    void tuner_bandwidth(int tb);
 
     /* Getters */
-    int getGain();
-    int getFreq();
-    int getSR();
-    rtlsdr_dev_t* getDev();
+    int center_freq();
+    int sample_rate();
+    int freq_corr();
+    rtlsdr_dev_t* device();
+    int find_devices_get_first_index();
 };
 
 #endif // DEVICE_H_
