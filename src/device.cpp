@@ -28,17 +28,13 @@ Device::Device(int index) {
 }
 
 Device::~Device() {
-    int ret = rtlsdr_close(this->dev);
-
-    if (ret < 0)
+    if (rtlsdr_close(this->dev) < 0)
         fail("Failed to close device, already closed or never opened...");
 }
 
 void Device::init() {
-    int ret = rtlsdr_open(&this->dev, index);
-
-    if (ret < 0) {
-        printf("Failed to open device %d\n", 0);
+    if (rtlsdr_open(&this->dev, index) < 0) {
+        printf("Failed to open device %d\n", index);
         exit(EXIT_FAILURE);
     }
 

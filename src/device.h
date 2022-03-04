@@ -1,9 +1,9 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
+#include <rtl-sdr.h>
 #include <complex>
 #include <vector>
-#include "rtl-sdr.h"
 
 using std::vector;
 using std::complex;
@@ -22,7 +22,7 @@ public:
     Device(int index);
     ~Device();
 
-    /* Functionality */
+    /* Reading samples */
     vector<complex<double>> read_samples_sync(int amount);
     void read_samples_async();
     void stop_reading_async();
