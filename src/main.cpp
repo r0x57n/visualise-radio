@@ -1,11 +1,12 @@
-#include <iostream>
 #include <fftw3.h>
+#include <rtl-sdr.h>
+#include <QApplication>
+#include <iostream>
 #include <complex>
 #include <cmath>
 #include <vector>
-#include <rtl-sdr.h>
 #include "device.h"
-#include "graph.h"
+#include "window.h"
 
 using std::vector;
 using std::complex;
@@ -29,24 +30,29 @@ int main(int argc, char *argv[]) {
     Device dev(0);
     vector<complex<double>> samps = dev.read_samples_sync(N);
 
-    vector<double> data;
+    QApplication app (argc, argv);
+
+    Window* window = new Window;
+
+    double xData[samps.size()];
+    double yDataTime[samps.size()];
+    double yDataFreq[samps.size()];
 
     for (int i = 0; i < (int)samps.size(); i++) {
-        data.push_back(samps[i].real());
+        xData[i] = i;
+        yDataTime[i] = samps[i].real();
     }
 
     fftw_complex out[N];
     fft(samps, out);
 
-    vector<double> data2;
-
     for (int i = 0; i < N; i++) {
-        data2.push_back(fabs(out[i][0]));
+        yDataFreq[i] = fabs(out[i][0]);
     }
 
-    Graph graph;
-    graph.plot(data, "Time domain");
-    graph.plot(data2, "Frequency domain");
+    window->timeCurve->setSamples(xData, yDataTime, samps.size());
+    window->freqCurve->setSamples(xData, yDataFreq, samps.size());
+    window->show();
 
-    return EXIT_SUCCESS;
+    return app.exec();
 }
