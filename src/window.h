@@ -9,16 +9,22 @@
 #include <qwt/qwt_plot_curve.h>
 
 class Window : public QWidget {
+    Q_OBJECT
 public:
     Window();
     QVBoxLayout *layout;
+
+    QwtPlot *timeDomain;
     QwtPlotCurve *timeCurve;
+    QwtPlot *freqDomain;
     QwtPlotCurve *freqCurve;
 
-private:
-    QwtPlot *timeDomain;
-    QwtPlot *freqDomain;
     QPushButton *refresh;
+public slots:
+    void refreshData();
+signals:
+    void refreshData(bool val);
+private:
 };
 
 
