@@ -5,31 +5,25 @@ project(vradio
         LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for LSP to find headers
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/") # qwt doesn't have a find cmake module
 
-set (SRC_LIST src/main.cpp src/graph.cpp src/device.cpp)
-set (LIBS librtlsdr.so boost_iostreams boost_system boost_filesystem fftw3)
+find_package(FFTW3 REQUIRED)
 
-OPTION(BUILD_UI "Build with QT support to allow an actual UI" ON)
-if(BUILD_UI)
-    set(CMAKE_AUTOMOC ON)
-    set(CMAKE_AUTORCC ON)
-    set(CMAKE_AUTOUIC ON)
+find_package(Qt5 COMPONENTS
+             Widgets REQUIRED)
 
-    find_package(Qt5 COMPONENTS
-                 Widgets REQUIRED
-                 Charts REQUIRED)
+find_package(Qwt REQUIRED)
 
-    set(SRC_LIST ${SRC_LIST} src/qtChart.cpp)
+set(SRC_LIST src/main.cpp src/device.cpp src/window.cpp)
+set(LIBS librtlsdr.so fftw3 qwt Qt5::Widgets)
 
-    set (${LIBS} Qt5::Widgets Qt5::Charts)
-endif()
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
-
-find_package(Boost REQUIRED COMPONENTS iostreams system filesystem)
-find_package(FFTW3 REQUIRED)
 
 add_executable(vradio
     ${SRC_LIST}
