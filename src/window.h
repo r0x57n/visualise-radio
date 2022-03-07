@@ -2,17 +2,28 @@
 #define WINDOW_H_
 
 #include <QWidget>
-#include <QVBoxLayout>
 #include <QPushButton>
+#include <QGroupBox>
 #include <QVBoxLayout>
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_plot_curve.h>
 
+/**
+ * The main window of the application.
+ */
 class Window : public QWidget {
-    Q_OBJECT
 public:
+    /**
+     * Creates all the components and the layout.
+     */
     Window();
-    QVBoxLayout *layout;
+
+    /**
+     * Empty.
+     */
+    ~Window();
+    QVBoxLayout *mainLayout;
+    QGroupBox *buttons;
 
     QwtPlot *timeDomain;
     QwtPlotCurve *timeCurve;
@@ -20,10 +31,7 @@ public:
     QwtPlotCurve *freqCurve;
 
     QPushButton *refresh;
-public slots:
-    void refreshData();
-signals:
-    void refreshData(bool val);
+    QPushButton *run;
 private:
 };
 

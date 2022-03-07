@@ -18,54 +18,54 @@ void msg(std::string msg) {
 /* Constructors/initialisation/destructors */
 
 Device::Device() {
-    this->index = this->find_devices_get_first_index();
-    this->init();
+    index = find_devices_get_first_index();
+    init();
 }
 
 Device::Device(int index) {
-    this->index = index;
-    this->init();
+    index = index;
+    init();
 }
 
 Device::~Device() {
-    if (rtlsdr_close(this->dev) < 0)
+    if (rtlsdr_close(dev) < 0)
         fail("Failed to close device, already closed or never opened...");
 }
 
 void Device::init() {
-    if (rtlsdr_open(&this->dev, index) < 0) {
+    if (rtlsdr_open(&dev, index) < 0) {
         printf("Failed to open device %d\n", index);
         exit(EXIT_FAILURE);
     }
 
-    this->center_freq(99.8e6);
-    this->sample_rate(1.024e6);
-    this->tuner_bandwidth(0);
-    this->freq_corr(60);
+    center_freq(99.8e6);
+    sample_rate(1.024e6);
+    tuner_bandwidth(0);
+    freq_corr(60);
 
-    rtlsdr_reset_buffer(this->dev); // has to be reset before reading samples
+    rtlsdr_reset_buffer(dev); // has to be reset before reading samples
 }
 
 
 /* Setters */
 
 void Device::center_freq(int freq) {
-    if (rtlsdr_set_center_freq(this->dev, freq) < 0)
+    if (rtlsdr_set_center_freq(dev, freq) < 0)
         fail("Failed to set center frequency.");
 }
 
 void Device::sample_rate(int sr) {
-    if (rtlsdr_set_sample_rate(this->dev, sr) < 0)
+    if (rtlsdr_set_sample_rate(dev, sr) < 0)
         fail("Failed to set sample rate.");
 }
 
 void Device::freq_corr(int fc) {
-    if (rtlsdr_set_freq_correction(this->dev, fc) < 0)
+    if (rtlsdr_set_freq_correction(dev, fc) < 0)
         fail("Failed to set frequency correction.");
 }
 
 void Device::tuner_bandwidth(int tb) {
-    if (rtlsdr_set_tuner_bandwidth(this->dev, tb) < 0)
+    if (rtlsdr_set_tuner_bandwidth(dev, tb) < 0)
         fail("Failed to set tuner bandwidth.");
 }
 
@@ -73,19 +73,19 @@ void Device::tuner_bandwidth(int tb) {
 /* Getters */
 
 int Device::center_freq() {
-    return rtlsdr_get_center_freq(this->dev);
+    return rtlsdr_get_center_freq(dev);
 }
 
 int Device::sample_rate() {
-    return rtlsdr_get_sample_rate(this->dev);
+    return rtlsdr_get_sample_rate(dev);
 }
 
 int Device::freq_corr() {
-    return rtlsdr_get_freq_correction(this->dev);
+    return rtlsdr_get_freq_correction(dev);
 }
 
 rtlsdr_dev_t* Device::device() {
-    return this->dev;
+    return dev;
 }
 
 int Device::find_devices_get_first_index() {
@@ -125,7 +125,7 @@ void start_reading(void *ctx) {
 
     rtlsdr_read_async(dev->device(), callback, dev, 0, 0);
 
-    printf("\nRead %ld samples...\n", dev->samples.size());
+    //printf("\nRead %ld samples...\n", dev->samples.size());
     fflush(stdout);
 }
 
@@ -135,7 +135,7 @@ void Device::read_samples_async() {
 }
 
 void Device::stop_reading_async() {
-    rtlsdr_cancel_async(this->dev);
+    rtlsdr_cancel_async(dev);
 }
 
 
@@ -147,7 +147,7 @@ vector<complex<double>> Device::read_samples_sync(int amount = 1024) {
     uint8_t *buf = (uint8_t*)malloc(amount * sizeof(uint8_t));
     int read = 0;
 
-    if (rtlsdr_read_sync(this->dev, buf, amount, &read) < 0 || read != amount)
+    if (rtlsdr_read_sync(dev, buf, amount, &read) < 0 || read != amount)
         fail("Couldn't read the requested amount.");
 
     return bytes_to_iq(buf, amount);
