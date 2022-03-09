@@ -1,5 +1,7 @@
 #include "app.h"
 
+#include <iostream>
+
 using std::make_unique;
 
 App::App(int argc, char *argv[]) {
@@ -7,9 +9,11 @@ App::App(int argc, char *argv[]) {
     app = make_unique<QApplication>(argc, argv);
     window = make_unique<Window>();
 
-    samplesPerRead = pow(2, 14);
+    sdr->samples_per_read(pow(2, 14));
 
-    QObject::connect(window->refresh, &QPushButton::pressed, this, &App::refreshData);
+    QObject::connect(window->refresh, &QPushButton::pressed, this, &App::refresh_data);
+    QObject::connect(window->run, &QPushButton::pressed, this, &App::toggle_async_read);
+    QObject::connect(sdr.get(), &Device::new_samples, this, &App::refresh_graph);
 
     window->show();
 }
@@ -33,8 +37,8 @@ void App::fft(vector<complex<double>>& data, fftw_complex* out) {
     fftw_destroy_plan(p);
 }
 
-void App::refreshData() {
-    vector<complex<double>> samps = sdr->read_samples_sync(samplesPerRead);
+void App::refresh_data() {
+    vector<complex<double>> samps = sdr->read_samples_sync();
     int N = samps.size();
 
     double xData[N];
@@ -58,4 +62,48 @@ void App::refreshData() {
 
     window->timeDomain->replot();
     window->freqDomain->replot();
+}
+
+void App::refresh_graph() {
+    int N = sdr->samples.front().size();
+
+    vector<complex<double>> samps = sdr->samples.front();
+    sdr->samples.erase(sdr->samples.begin());
+
+    double xData[N];
+    double yDataTime[N];
+    double yDataFreq[N];
+
+    for (int i = 0; i < (int)N; i++) {
+        xData[i] = i;
+        yDataTime[i] = samps[i].real();
+    }
+
+    fftw_complex out[N];
+    fft(samps, out);
+
+    for (int i = 0; i < N; i++) {
+        yDataFreq[i] = fabs(out[i][0]);
+    }
+
+    window->timeCurve->setSamples(xData, yDataTime, N);
+    window->freqCurve->setSamples(xData, yDataFreq, N);
+
+    window->timeDomain->replot();
+    window->freqDomain->replot();
+}
+
+void App::toggle_async_read() {
+    bool running = true;
+
+    if(window->run->text() == "Run") {
+        window->run->setText("Stop");
+        window->refresh->setDisabled(true);
+        sdr->read_samples_async();
+    } else {
+        running = false;
+        window->run->setText("Run");
+        window->refresh->setDisabled(false);
+        sdr->stop_async();
+    }
 }

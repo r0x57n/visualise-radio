@@ -1,7 +1,6 @@
 #include "device.h"
 #include <iostream>
 #include <string>
-#include <thread>
 
 /* Helpers */
 
@@ -42,6 +41,7 @@ void Device::init() {
     sample_rate(1.024e6);
     tuner_bandwidth(0);
     freq_corr(60);
+    samples_per_read(1024);
 
     rtlsdr_reset_buffer(dev); // has to be reset before reading samples
 }
@@ -69,6 +69,10 @@ void Device::tuner_bandwidth(int tb) {
         fail("Failed to set tuner bandwidth.");
 }
 
+void Device::samples_per_read(int amount) {
+    samplesPerRead = amount;
+}
+
 
 /* Getters */
 
@@ -88,6 +92,10 @@ rtlsdr_dev_t* Device::device() {
     return dev;
 }
 
+int Device::samples_per_read() {
+    return samplesPerRead;
+}
+
 int Device::find_devices_get_first_index() {
     int count = rtlsdr_get_device_count();
 
@@ -103,46 +111,31 @@ int Device::find_devices_get_first_index() {
 }
 
 
-/* Async reading */
+/* Reading */
 
 static void callback(uint8_t *buf, uint32_t len, void *ctx) {
-    //Device *dev = static_cast<Device *>(ctx);
+    Device *dev = static_cast<Device*>(ctx);
+    dev->samples.push_back(dev->bytes_to_iq(buf, len));
 
-    std::vector<uint8_t> read;
-    for (int i = 0; i < (int)len; i++) {
-        read.push_back(buf[i]);
-    }
-
-    std::cout << "read: " << len << std::endl;
-
-    //dev->samples.push_back(read);
-}
-
-void start_reading(void *ctx) {
-    msg("reading...");
-
-    Device *dev = static_cast<Device *>(ctx);
-
-    rtlsdr_read_async(dev->device(), callback, dev, 0, 0);
-
-    //printf("\nRead %ld samples...\n", dev->samples.size());
-    fflush(stdout);
+    emit dev->new_samples(); // send a QT signal that the device contains new samples
 }
 
 void Device::read_samples_async() {
-    // std::thread first (startReading, this);
-    // first.join();
+    std::thread first(&Device::start_async, this);
+    first.detach();
 }
 
-void Device::stop_reading_async() {
+void Device::start_async() {
+    rtlsdr_read_async(dev, callback, this, 0, 0);
+}
+
+
+void Device::stop_async() {
     rtlsdr_cancel_async(dev);
 }
 
-
-/* Sync reading */
-
-vector<complex<double>> Device::read_samples_sync(int amount = 1024) {
-    amount *= 2; // samples are complex (real/imag)
+vector<complex<double>> Device::read_samples_sync() {
+    int amount = samplesPerRead * 2; // samples are complex (real/imag)
 
     uint8_t *buf = (uint8_t*)malloc(amount * sizeof(uint8_t));
     int read = 0;
@@ -163,8 +156,6 @@ vector<complex<double>> Device::bytes_to_iq(uint8_t *buf, int size) {
         // convert to IQ sampling and normalize
         iq.push_back(complex<double> ((byte1 / 127.5 - 1.0), (byte2 / 127.5 - 1.0)));
     }
-
-    free(buf);
 
     return iq;
 }

@@ -35,19 +35,20 @@ public:
      */
     int start();
 
-    unique_ptr<Device> sdr; ///<The rtl-sdr device.
-    unique_ptr<Window> window; ///<The application window (a QWidget).
+    unique_ptr<Device> sdr; // The rtl-sdr device.
+    unique_ptr<Window> window; // The application window (a QWidget).
 
 public slots:
     /**
      * Gets called when the refresh button is pressed from the UI.
      * Refreshes the data for the graphs.
      */
-    void refreshData();
+    void refresh_data();
 private:
-    int samplesPerRead;
     unique_ptr<QApplication> app;
     void fft(vector<complex<double>>& data, fftw_complex* out);
+    void toggle_async_read();
+    void refresh_graph();
 };
 
 #endif // APP_H_
