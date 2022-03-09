@@ -37,6 +37,7 @@ void Device::init() {
         exit(EXIT_FAILURE);
     }
 
+    // Set sane defaults
     center_freq(99.8e6);
     sample_rate(1.024e6);
     tuner_bandwidth(0);

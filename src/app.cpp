@@ -29,17 +29,19 @@ int App::start() {
     return app->exec();
 }
 
-void App::fft(vector<complex<double>>& data, fftw_complex* out) {
-    int N = data.size();
-    fftw_complex *in;
-    fftw_plan p;
+void App::toggle_async_read() {
+    bool running = true;
 
-    in = reinterpret_cast<fftw_complex*>(&data[0]);
-
-    p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-    fftw_execute(p);
-
-    fftw_destroy_plan(p);
+    if(window->run->text() == "Run") {
+        window->run->setText("Stop");
+        window->refresh->setDisabled(true);
+        sdr->read_samples_async();
+    } else {
+        running = false;
+        window->run->setText("Run");
+        window->refresh->setDisabled(false);
+        sdr->stop_async();
+    }
 }
 
 void App::refresh_graph() {
@@ -57,6 +59,7 @@ void App::refresh_graph() {
         yDataTime[i] = samps[i].real();
     }
 
+    // Perform FFT on the samples to get the frequency domain representation.
     fftw_complex out[N];
     fft(samps, out);
 
@@ -64,24 +67,37 @@ void App::refresh_graph() {
         yDataFreq[i] = fabs(out[i][0]);
     }
 
+    // Rotate the values (https://pysdr.org/content/frequency_domain.html#fft-in-python).
+    double yDataFreqShifted[N];
+    for (int i = 0; i <= N/2; i++) {
+        int src = i;
+        int dst = i + N/2;
+        yDataFreqShifted[dst] = yDataFreq[src];
+    }
+
+    for (int i = (N/2) + 1; i < N; i++) {
+        int src = i;
+        int dst = i - N/2;
+        yDataFreqShifted[dst] = yDataFreq[src];
+    }
+
+    // Display the graphs
     window->timeCurve->setSamples(xData, yDataTime, N);
-    window->freqCurve->setSamples(xData, yDataFreq, N);
+    window->freqCurve->setSamples(xData, yDataFreqShifted, N);
 
     window->timeDomain->replot();
     window->freqDomain->replot();
 }
 
-void App::toggle_async_read() {
-    bool running = true;
+void App::fft(vector<complex<double>>& data, fftw_complex* out) {
+    int N = data.size();
+    fftw_complex *in;
+    fftw_plan p;
 
-    if(window->run->text() == "Run") {
-        window->run->setText("Stop");
-        window->refresh->setDisabled(true);
-        sdr->read_samples_async();
-    } else {
-        running = false;
-        window->run->setText("Run");
-        window->refresh->setDisabled(false);
-        sdr->stop_async();
-    }
+    in = reinterpret_cast<fftw_complex*>(&data[0]);
+
+    p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(p);
+
+    fftw_destroy_plan(p);
 }
