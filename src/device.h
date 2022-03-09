@@ -36,9 +36,10 @@ public:
     ~Device();
 
     /**
-     * Reads the given amount of samples and returns them.
+     * Reads "samplesPerRead" amount of samples into "samples" vector
+     * synchronously.
      */
-    vector<complex<double>> read_samples_sync();
+    void read_samples_sync();
 
     /**
      * Starts async reading samples from device and stores

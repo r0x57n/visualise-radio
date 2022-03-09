@@ -126,7 +126,7 @@ void Device::read_samples_async() {
 }
 
 void Device::start_async() {
-    rtlsdr_read_async(dev, callback, this, 0, 0);
+    rtlsdr_read_async(dev, callback, this, 0, samplesPerRead);
 }
 
 
@@ -134,7 +134,7 @@ void Device::stop_async() {
     rtlsdr_cancel_async(dev);
 }
 
-vector<complex<double>> Device::read_samples_sync() {
+void Device::read_samples_sync() {
     int amount = samplesPerRead * 2; // samples are complex (real/imag)
 
     uint8_t *buf = (uint8_t*)malloc(amount * sizeof(uint8_t));
@@ -143,7 +143,7 @@ vector<complex<double>> Device::read_samples_sync() {
     if (rtlsdr_read_sync(dev, buf, amount, &read) < 0 || read != amount)
         fail("Couldn't read the requested amount.");
 
-    return bytes_to_iq(buf, amount);
+    samples.push_back(bytes_to_iq(buf, amount));
 }
 
 vector<complex<double>> Device::bytes_to_iq(uint8_t *buf, int size) {

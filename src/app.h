@@ -38,16 +38,15 @@ public:
     unique_ptr<Device> sdr; // The rtl-sdr device.
     unique_ptr<Window> window; // The application window (a QWidget).
 
-public slots:
-    /**
-     * Gets called when the refresh button is pressed from the UI.
-     * Refreshes the data for the graphs.
-     */
-    void refresh_data();
 private:
     unique_ptr<QApplication> app;
     void fft(vector<complex<double>>& data, fftw_complex* out);
     void toggle_async_read();
+
+    /**
+     * Refreshes the graphs with the first vector sample inside of
+     * the SDR device's sample buffer.
+     */
     void refresh_graph();
 };
 
