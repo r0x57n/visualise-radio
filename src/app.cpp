@@ -22,6 +22,7 @@ App::App(int argc, char *argv[]) {
     QObject::connect(sdr.get(), &Device::new_samples, this, &App::refresh_graph);
 
     window->show();
+    window->populate_with_device(sdr.get());
 }
 
 App::~App() { }

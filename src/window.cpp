@@ -3,15 +3,40 @@
 Window::Window() {
     resize(400, 300);
 
-    /* Layout */
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QGridLayout *mainLayout = new QGridLayout(this);
 
-    QGroupBox *buttons = new QGroupBox(this);
-    QHBoxLayout *btnsLayout = new QHBoxLayout;
+    mainLayout->addLayout(get_interactive_layout(), 0, 0); // settings and buttions
+    mainLayout->addLayout(get_graphs_layout(), 0, 1); // the main graphs
 
-    QGroupBox *graphs = new QGroupBox(this);
-    QVBoxLayout *graphsLayout = new QVBoxLayout;
+    mainLayout->setColumnStretch(1, 3); // stretch the graphs
+    setLayout(mainLayout);
+}
 
+Window::~Window() { }
+
+QGridLayout* Window::get_interactive_layout() {
+    QGridLayout *interactive = new QGridLayout(this);
+    QGridLayout *interactiveSettings = new QGridLayout(this);
+    QGridLayout *interactiveButtons = new QGridLayout(this);
+
+    /* Interactive */
+    freqInput = new QLineEdit();
+    QPushButton *apply = new QPushButton("Apply", this);
+    refresh = new QPushButton("Refresh", this);
+    run = new QPushButton("Run", this);
+
+    interactiveSettings->addWidget(freqInput, 0, 0);
+    interactiveButtons->addWidget(apply, 0, 0);
+    interactiveButtons->addWidget(refresh, 1, 0);
+    interactiveButtons->addWidget(run, 1, 1);
+    interactive->addLayout(interactiveSettings, 0, 0);
+    interactive->addLayout(interactiveButtons, 1, 0);
+
+    return interactive;
+}
+
+QVBoxLayout* Window::get_graphs_layout() {
+    QVBoxLayout *graphsLayout = new QVBoxLayout(this);
 
     /* Graph for time domain */
     timeDomain = new QwtPlot;
@@ -38,24 +63,12 @@ Window::Window() {
 
     freqDomain->replot();
 
-
-    /* Buttons */
-    refresh = new QPushButton("Refresh", this);
-    run = new QPushButton("Run", this);
-
-
-    /* Add widgets to layouts */
     graphsLayout->addWidget(timeDomain);
     graphsLayout->addWidget(freqDomain);
-    graphs->setLayout(graphsLayout);
-    mainLayout->addWidget(graphs);
 
-    btnsLayout->addWidget(refresh);
-    btnsLayout->addWidget(run);
-    buttons->setLayout(btnsLayout);
-    mainLayout->addWidget(buttons);
-
-    setLayout(mainLayout);
+    return graphsLayout;
 }
 
-Window::~Window() { }
+void Window::populate_with_device(Device *sdr) {
+    freqInput->setText(QString::number(sdr->center_freq()));
+}
