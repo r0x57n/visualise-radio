@@ -22,8 +22,6 @@ public:
      * Empty.
      */
     ~Window();
-    QVBoxLayout *mainLayout;
-    QGroupBox *buttons;
 
     QwtPlot *timeDomain;
     QwtPlotCurve *timeCurve;

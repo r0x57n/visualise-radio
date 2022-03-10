@@ -3,11 +3,14 @@
 Window::Window() {
     resize(400, 300);
 
-
     /* Layout */
-    mainLayout = new QVBoxLayout(this);
-    buttons = new QGroupBox(this);
-    setLayout(mainLayout);
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+
+    QGroupBox *buttons = new QGroupBox(this);
+    QHBoxLayout *btnsLayout = new QHBoxLayout;
+
+    QGroupBox *graphs = new QGroupBox(this);
+    QVBoxLayout *graphsLayout = new QVBoxLayout;
 
 
     /* Graph for time domain */
@@ -37,19 +40,22 @@ Window::Window() {
 
 
     /* Buttons */
-    QHBoxLayout *btnsLayout = new QHBoxLayout;
     refresh = new QPushButton("Refresh", this);
     run = new QPushButton("Run", this);
 
-    btnsLayout->addWidget(refresh);
-    btnsLayout->addWidget(run);
-
 
     /* Add widgets to layouts */
-    mainLayout->addWidget(timeDomain);
-    mainLayout->addWidget(freqDomain);
+    graphsLayout->addWidget(timeDomain);
+    graphsLayout->addWidget(freqDomain);
+    graphs->setLayout(graphsLayout);
+    mainLayout->addWidget(graphs);
+
+    btnsLayout->addWidget(refresh);
+    btnsLayout->addWidget(run);
     buttons->setLayout(btnsLayout);
     mainLayout->addWidget(buttons);
+
+    setLayout(mainLayout);
 }
 
 Window::~Window() { }
