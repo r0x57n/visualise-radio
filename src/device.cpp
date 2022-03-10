@@ -136,15 +136,13 @@ void Device::stop_async() {
 }
 
 void Device::read_samples_sync() {
-    int spr = samplesPerRead * 2; // samples are complex (real/imag)
-
-    uint8_t *buf = (uint8_t*)malloc(spr * sizeof(uint8_t));
+    uint8_t *buf = (uint8_t*)malloc(samplesPerRead * sizeof(uint8_t));
     int read = 0;
 
-    if (rtlsdr_read_sync(dev, buf, spr, &read) < 0 || read != spr)
+    if (rtlsdr_read_sync(dev, buf, samplesPerRead, &read) < 0 || read != samplesPerRead)
         fail("Couldn't read the requested amount.");
 
-    samples.push_back(bytes_to_iq(buf, spr));
+    samples.push_back(bytes_to_iq(buf, samplesPerRead));
 }
 
 vector<complex<double>> Device::bytes_to_iq(uint8_t *buf, int size) {
