@@ -40,7 +40,7 @@ public:
 
 private:
     unique_ptr<QApplication> app;
-    void fft(vector<complex<double>>& data, fftw_complex* out);
+    void fft(vector<complex<double>> &data, complex<double> *out, int size);
     void toggle_async_read();
 
     /**

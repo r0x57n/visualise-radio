@@ -1,6 +1,7 @@
 #include "app.h"
 
 #include <iostream>
+#include <complex.h>
 
 using std::make_unique;
 
@@ -59,15 +60,23 @@ void App::refresh_graph() {
         yDataTime[i] = samps[i].real();
     }
 
+    // Setup x range for freq domain plot
+    int Fs = sdr->sample_rate();
+    vector<double> xDataFreq;
+    for (int i = Fs/-2; i <= Fs/2; i += Fs/N) {
+        xDataFreq.push_back(i);
+    }
+    double* xDataFreqPoint = &xDataFreq[0];
+
     // Perform FFT on the samples to get the frequency domain representation.
-    fftw_complex out[N];
-    fft(samps, out);
+    complex<double> out[N];
+    fft(samps, out, N);
 
     for (int i = 0; i < N; i++) {
-        yDataFreq[i] = fabs(out[i][0]);
+        yDataFreq[i] = abs(out[i]);
     }
 
-    // Rotate the values (https://pysdr.org/content/frequency_domain.html#fft-in-python).
+    // Rotate the values.
     double yDataFreqShifted[N];
     for (int i = 0; i <= N/2; i++) {
         int src = i;
@@ -83,21 +92,24 @@ void App::refresh_graph() {
 
     // Display the graphs
     window->timeCurve->setSamples(xData, yDataTime, N);
-    window->freqCurve->setSamples(xData, yDataFreqShifted, N);
+    window->freqCurve->setSamples(xDataFreqPoint, yDataFreqShifted, N);
 
     window->timeDomain->replot();
     window->freqDomain->replot();
 }
 
-void App::fft(vector<complex<double>>& data, fftw_complex* out) {
+void App::fft(vector<complex<double>>& data, complex<double> *out, int size) {
     int N = data.size();
-    fftw_complex *in;
+    fftw_complex *in, *outTemp;
     fftw_plan p;
 
     in = reinterpret_cast<fftw_complex*>(&data[0]);
+    outTemp = reinterpret_cast<fftw_complex*>(out);
 
-    p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    p = fftw_plan_dft_1d(N, in, outTemp, FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(p);
+
+    memcpy(out, outTemp, size);
 
     fftw_destroy_plan(p);
 }
