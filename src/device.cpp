@@ -38,7 +38,7 @@ void Device::init() {
     }
 
     // Set sane defaults
-    center_freq(99.8e6);
+    center_freq(99.8e6); // SR P4 Östergötland
     sample_rate(1.024e6);
     tuner_bandwidth(0);
     freq_corr(60);
@@ -136,15 +136,15 @@ void Device::stop_async() {
 }
 
 void Device::read_samples_sync() {
-    int amount = samplesPerRead * 2; // samples are complex (real/imag)
+    int spr = samplesPerRead * 2; // samples are complex (real/imag)
 
-    uint8_t *buf = (uint8_t*)malloc(amount * sizeof(uint8_t));
+    uint8_t *buf = (uint8_t*)malloc(spr * sizeof(uint8_t));
     int read = 0;
 
-    if (rtlsdr_read_sync(dev, buf, amount, &read) < 0 || read != amount)
+    if (rtlsdr_read_sync(dev, buf, spr, &read) < 0 || read != spr)
         fail("Couldn't read the requested amount.");
 
-    samples.push_back(bytes_to_iq(buf, amount));
+    samples.push_back(bytes_to_iq(buf, spr));
 }
 
 vector<complex<double>> Device::bytes_to_iq(uint8_t *buf, int size) {
@@ -154,7 +154,7 @@ vector<complex<double>> Device::bytes_to_iq(uint8_t *buf, int size) {
         float byte1 = buf[2*i];
         float byte2 = buf[2*i+1];
 
-        // convert to IQ sampling and normalize
+        // convert to IQ sample and normalize
         iq.push_back(complex<double> ((byte1 / 127.5 - 1.0), (byte2 / 127.5 - 1.0)));
     }
 
