@@ -10,21 +10,30 @@ Window::Window() {
     setLayout(mainLayout);
 
 
-    /* Graphs */
+    /* Graph for time domain */
     timeDomain = new QwtPlot;
-    timeCurve = new QwtPlotCurve;
+    timeDomain->setTitle("Time Domain");
+    timeDomain->setAxisScale(QwtPlot::Axis::yLeft, -1, 1, 0);
+    timeDomain->setAxisTitle(QwtPlot::Axis::yLeft, "Amplitude");
+    timeDomain->setAxisTitle(QwtPlot::Axis::xBottom, "Time");
 
+    timeCurve = new QwtPlotCurve;
     timeCurve->attach(timeDomain);
+
     timeDomain->replot();
 
+
+    /* Graph for freq domain */
     freqDomain = new QwtPlot;
+    freqDomain->setTitle("Freq Domain");
+    freqDomain->setAxisScale(QwtPlot::Axis::yLeft, 0, 2000, 0);
+    freqDomain->setAxisTitle(QwtPlot::Axis::yLeft, "Magnitude");
+    freqDomain->setAxisTitle(QwtPlot::Axis::xBottom, "Frequency (MHz)");
+
     freqCurve = new QwtPlotCurve;
-
     freqCurve->attach(freqDomain);
-    freqDomain->replot();
 
-    mainLayout->addWidget(timeDomain);
-    mainLayout->addWidget(freqDomain);
+    freqDomain->replot();
 
 
     /* Buttons */
@@ -35,6 +44,10 @@ Window::Window() {
     btnsLayout->addWidget(refresh);
     btnsLayout->addWidget(run);
 
+
+    /* Add widgets to layouts */
+    mainLayout->addWidget(timeDomain);
+    mainLayout->addWidget(freqDomain);
     buttons->setLayout(btnsLayout);
     mainLayout->addWidget(buttons);
 }
