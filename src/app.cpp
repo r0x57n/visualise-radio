@@ -12,20 +12,46 @@ App::App(int argc, char *argv[]) {
 
     sdr->samples_per_read(pow(2, 16));
 
+    connect_signals();
+    populate_window_device();
+
+    window->show();
+}
+
+App::~App() { }
+
+void App::connect_signals() {
+    /* Connects to the SDR device object's 'new_samples' QT signal. */
+    QObject::connect(sdr.get(), &Device::new_samples, this, &App::refresh_graph);
+
+    /* Refresh/run buttons */
     QObject::connect(window->refresh, &QPushButton::pressed, this, [this](){
             sdr->read_samples_sync();
             refresh_graph();
         });
     QObject::connect(window->run, &QPushButton::pressed, this, &App::toggle_async_read);
 
-    /* Connects to the SDR device object's 'new_samples' QT signal. */
-    QObject::connect(sdr.get(), &Device::new_samples, this, &App::refresh_graph);
-
-    window->show();
-    window->populate_with_device(sdr.get());
+    /* Settings changed signals */
+    QObject::connect(window->freqInput, &QLineEdit::editingFinished, this, [this](){
+            update(SDR::Settings::centerFreq, window->freqInput->text().toInt());
+        });
+    QObject::connect(window->fsInput, &QLineEdit::editingFinished, this, [this](){
+            update(SDR::Settings::fs, window->fsInput->text().toInt());
+        });
+    QObject::connect(window->freqCorrInput, &QLineEdit::editingFinished, this, [this](){
+            update(SDR::Settings::freqCorr, window->freqCorrInput->text().toInt());
+        });
+    QObject::connect(window->sprInput, &QLineEdit::editingFinished, this, [this](){
+            update(SDR::Settings::spr, window->sprInput->text().toInt());
+        });
 }
 
-App::~App() { }
+void App::populate_window_device() {
+    window->freqInput->setText(QString::number(sdr->center_freq()));
+    window->fsInput->setText(QString::number(sdr->sample_rate()));
+    window->freqCorrInput->setText(QString::number(sdr->freq_corr()));
+    window->sprInput->setText(QString::number(sdr->samples_per_read()));
+}
 
 int App::start() {
     return app->exec();
@@ -113,4 +139,23 @@ void App::fft(vector<complex<double>>& data, complex<double> *out, int size) {
     memcpy(out, outTemp, size);
 
     fftw_destroy_plan(p);
+}
+
+void App::update(SDR::Settings setting, int value) {
+    switch (setting) {
+        case SDR::Settings::centerFreq:
+            sdr->center_freq(value);
+            break;
+        case SDR::Settings::freqCorr:
+            sdr->freq_corr(value);
+            break;
+        case SDR::Settings::fs:
+            sdr->sample_rate(value);
+            break;
+        case SDR::Settings::spr:
+            sdr->samples_per_read(value);
+            break;
+        default:
+            break;
+    }
 }

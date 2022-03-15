@@ -1,4 +1,5 @@
 #include "window.h"
+#include <QFormLayout>
 
 Window::Window() {
     resize(400, 300);
@@ -20,13 +21,21 @@ QGridLayout* Window::get_interactive_layout() {
     QGridLayout *interactiveButtons = new QGridLayout(this);
 
     /* Interactive */
+    QFormLayout *interactiveSettingForm = new QFormLayout(this);
     freqInput = new QLineEdit();
-    QPushButton *apply = new QPushButton("Apply", this);
+    fsInput = new QLineEdit();
+    freqCorrInput = new QLineEdit();
+    sprInput = new QLineEdit();
+
+    interactiveSettingForm->addRow("Center freq", freqInput);
+    interactiveSettingForm->addRow("Sample rate", fsInput);
+    interactiveSettingForm->addRow("Freq corr", freqCorrInput);
+    interactiveSettingForm->addRow("Samples per read", sprInput);
+
     refresh = new QPushButton("Refresh", this);
     run = new QPushButton("Run", this);
 
-    interactiveSettings->addWidget(freqInput, 0, 0);
-    interactiveButtons->addWidget(apply, 0, 0);
+    interactiveSettings->addLayout(interactiveSettingForm, 0, 0);
     interactiveButtons->addWidget(refresh, 1, 0);
     interactiveButtons->addWidget(run, 1, 1);
     interactive->addLayout(interactiveSettings, 0, 0);
@@ -67,8 +76,4 @@ QVBoxLayout* Window::get_graphs_layout() {
     graphsLayout->addWidget(freqDomain);
 
     return graphsLayout;
-}
-
-void Window::populate_with_device(Device *sdr) {
-    freqInput->setText(QString::number(sdr->center_freq()));
 }

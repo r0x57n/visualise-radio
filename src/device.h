@@ -10,6 +10,10 @@
 using std::vector;
 using std::complex;
 
+namespace SDR {
+    enum Settings { centerFreq, freqCorr, fs, spr };
+}
+
 /**
  * Handles all the communication with the rtl-sdr device
  * through the rtl-sdr.h library.

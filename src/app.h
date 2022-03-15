@@ -42,12 +42,24 @@ private:
     unique_ptr<QApplication> app;
     void fft(vector<complex<double>> &data, complex<double> *out, int size);
     void toggle_async_read();
+    void connect_signals();
 
     /**
      * Refreshes the graphs with the first vector sample inside of
      * the SDR device's sample buffer.
      */
     void refresh_graph();
+
+    /**
+     * Populates settings fields in window with values
+     * from the given rtl-sdr device.
+     */
+    void populate_window_device();
+
+    /**
+     * Updates the SDR device
+     */
+    void update(SDR::Settings setting, int value);
 };
 
 #endif // APP_H_

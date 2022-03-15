@@ -26,12 +26,6 @@ public:
      */
     ~Window();
 
-    /**
-     * Populates settings fields with values
-     * from the given rtl-sdr device.
-     */
-    void populate_with_device(Device *sdr);
-
     QwtPlot *timeDomain;
     QwtPlotCurve *timeCurve;
     QwtPlot *freqDomain;
@@ -39,11 +33,14 @@ public:
 
     QPushButton *refresh;
     QPushButton *run;
+
+    QLineEdit *freqInput;
+    QLineEdit *fsInput;
+    QLineEdit *freqCorrInput;
+    QLineEdit *sprInput;
 private:
     QGridLayout* get_interactive_layout();
     QVBoxLayout* get_graphs_layout();
-
-    QLineEdit *freqInput;
 };
 
 
