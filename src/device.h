@@ -11,7 +11,7 @@ using std::vector;
 using std::complex;
 
 namespace SDR {
-    enum Settings { centerFreq, freqCorr, fs, spr };
+    enum Settings { centerFreq, freqCorr, sampleRate, samplesPerRead };
 }
 
 /**
