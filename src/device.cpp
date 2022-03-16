@@ -38,10 +38,18 @@ void Device::init() {
     }
 
     // Set sane defaults
-    center_freq(99.8e6); // SR P4 Östergötland
-    sample_rate(1.024e6);
-    tuner_bandwidth(0);
-    freq_corr(60);
+    if(center_freq(99.8e6)) // SR P4 Östergötland
+        fail("couldn't set center frequency...");
+
+    if(sample_rate(1.024e6))
+        fail("couldn't set sample rate...");
+
+    if(tuner_bandwidth(0))
+        fail("couldn't set tuner bandwidth...");
+
+    if(freq_corr(60))
+        fail("couldn't set frequency correction...");
+
     samples_per_read(1024);
     asyncReading = false;
 
@@ -51,24 +59,36 @@ void Device::init() {
 
 /* Setters */
 
-void Device::center_freq(int freq) {
-    if (rtlsdr_set_center_freq(dev, freq) < 0)
-        fail("Failed to set center frequency.");
+/**
+ * Sets center frequency.
+ * Returns 0 on success.
+ */
+int Device::center_freq(int freq) {
+    return rtlsdr_set_center_freq(dev, freq);
 }
 
-void Device::sample_rate(int sr) {
-    if (rtlsdr_set_sample_rate(dev, sr) < 0)
-        fail("Failed to set sample rate.");
+/**
+ * Sets sample rate.
+ * Returns 0 on success.
+ */
+int Device::sample_rate(int sr) {
+    return rtlsdr_set_sample_rate(dev, sr);
 }
 
-void Device::freq_corr(int fc) {
-    if (rtlsdr_set_freq_correction(dev, fc) < 0)
-        fail("Failed to set frequency correction.");
+/**
+ * Sets frequency correction.
+ * Returns 0 on success.
+ */
+int Device::freq_corr(int fc) {
+    return rtlsdr_set_freq_correction(dev, fc);
 }
 
-void Device::tuner_bandwidth(int tb) {
-    if (rtlsdr_set_tuner_bandwidth(dev, tb) < 0)
-        fail("Failed to set tuner bandwidth.");
+/**
+ * Sets tuner bandwidth.
+ * Returns 0 on success.
+ */
+int Device::tuner_bandwidth(int tb) {
+    return rtlsdr_set_tuner_bandwidth(dev, tb);
 }
 
 void Device::samples_per_read(int amount) {

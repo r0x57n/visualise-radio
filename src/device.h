@@ -66,10 +66,10 @@ public:
     bool asyncReading; // flag to show if we're reading async currently
 
     /* Setters. */
-    void center_freq(int freq);
-    void sample_rate(int sr);
-    void freq_corr(int fc);
-    void tuner_bandwidth(int tb);
+    int center_freq(int freq);
+    int sample_rate(int sr);
+    int freq_corr(int fc);
+    int tuner_bandwidth(int tb);
     void samples_per_read(int amount);
 
     /* Getters. */
