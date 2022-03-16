@@ -22,15 +22,15 @@ QGridLayout* Window::get_interactive_layout() {
 
     /* Interactive */
     QFormLayout *interactiveSettingForm = new QFormLayout(this);
-    freqInput = new QLineEdit();
-    fsInput = new QLineEdit();
-    freqCorrInput = new QLineEdit();
-    sprInput = new QLineEdit();
+    center_freq = new QLineEdit();
+    sample_rate = new QLineEdit();
+    freq_corr = new QLineEdit();
+    samples_per_read = new QLineEdit();
 
-    interactiveSettingForm->addRow("Center freq", freqInput);
-    interactiveSettingForm->addRow("Sample rate", fsInput);
-    interactiveSettingForm->addRow("Freq corr", freqCorrInput);
-    interactiveSettingForm->addRow("Samples per read", sprInput);
+    interactiveSettingForm->addRow("Center freq", center_freq);
+    interactiveSettingForm->addRow("Sample rate", sample_rate);
+    interactiveSettingForm->addRow("Freq corr", freq_corr);
+    interactiveSettingForm->addRow("Samples per read", samples_per_read);
 
     refresh = new QPushButton("Refresh", this);
     run = new QPushButton("Run", this);
