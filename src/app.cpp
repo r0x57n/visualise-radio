@@ -34,22 +34,22 @@ void App::connect_signals() {
     QObject::connect(window->run, &QPushButton::pressed, this, &App::toggle_async_read);
 
     /* Settings changed signals */
-    QObject::connect(window->center_freq, &QLineEdit::editingFinished, this, [this](){
+    QObject::connect(window->center_freq, &QSpinBox::editingFinished, this, [this](){
             update(SDR::Settings::centerFreq,
-                   window->center_freq->text().toInt(),
+                   window->center_freq->value(),
                    sdr->center_freq());
         });
-    QObject::connect(window->sample_rate, &QLineEdit::editingFinished, this, [this](){
+    QObject::connect(window->sample_rate, &QSpinBox::editingFinished, this, [this](){
             update(SDR::Settings::fs,
                    window->sample_rate->text().toInt(),
                    sdr->sample_rate());
         });
-    QObject::connect(window->freq_corr, &QLineEdit::editingFinished, this, [this](){
+    QObject::connect(window->freq_corr, &QSpinBox::editingFinished, this, [this](){
             update(SDR::Settings::freqCorr,
                    window->freq_corr->text().toInt(),
                    sdr->freq_corr());
         });
-    QObject::connect(window->samples_per_read, &QLineEdit::editingFinished, this, [this](){
+    QObject::connect(window->samples_per_read, &QSpinBox::editingFinished, this, [this](){
             update(SDR::Settings::spr,
                    window->samples_per_read->text().toInt(),
                    0);
@@ -57,10 +57,10 @@ void App::connect_signals() {
 }
 
 void App::populate_window_device() {
-    window->center_freq->setText(QString::number(sdr->center_freq()));
-    window->sample_rate->setText(QString::number(sdr->sample_rate()));
-    window->freq_corr->setText(QString::number(sdr->freq_corr()));
-    window->samples_per_read->setText(QString::number(sdr->samples_per_read()));
+    window->center_freq->setValue(sdr->center_freq());
+    window->sample_rate->setValue(sdr->sample_rate());
+    window->freq_corr->setValue(sdr->freq_corr());
+    window->samples_per_read->setValue(sdr->samples_per_read());
 }
 
 int App::start() {
@@ -155,19 +155,19 @@ void App::update(SDR::Settings setting, int value, int oldValue) {
     switch (setting) {
         case SDR::Settings::centerFreq:
             if(sdr->center_freq(value)) {
-                window->center_freq->setText(QString::number(oldValue));
+                window->center_freq->setValue(oldValue);
                 log << "couldn't set center frequency";
             }
             break;
         case SDR::Settings::freqCorr:
             if(sdr->freq_corr(value)) {
-                window->freq_corr->setText(QString::number(oldValue));
+                window->freq_corr->setValue(oldValue);
                 log << "couldn't set frequency correction";
             }
             break;
         case SDR::Settings::fs:
             if(sdr->sample_rate(value)) {
-                window->sample_rate->setText(QString::number(oldValue));
+                window->sample_rate->setValue(oldValue);
                 log << "couldn't set sample rate";
             }
             break;

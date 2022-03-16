@@ -5,7 +5,7 @@
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include <QLineEdit>
+#include <QSpinBox>
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_plot_curve.h>
 
@@ -34,10 +34,10 @@ public:
     QPushButton *refresh;
     QPushButton *run;
 
-    QLineEdit *center_freq;
-    QLineEdit *sample_rate;
-    QLineEdit *freq_corr;
-    QLineEdit *samples_per_read;
+    QSpinBox *center_freq;
+    QSpinBox *sample_rate;
+    QSpinBox *freq_corr;
+    QSpinBox *samples_per_read;
 private:
     QGridLayout* get_interactive_layout();
     QVBoxLayout* get_graphs_layout();

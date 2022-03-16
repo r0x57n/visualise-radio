@@ -22,10 +22,23 @@ QGridLayout* Window::get_interactive_layout() {
 
     /* Interactive */
     QFormLayout *interactiveSettingForm = new QFormLayout(this);
-    center_freq = new QLineEdit();
-    sample_rate = new QLineEdit();
-    freq_corr = new QLineEdit();
-    samples_per_read = new QLineEdit();
+
+    center_freq = new QSpinBox();
+    center_freq->setGroupSeparatorShown(true);
+    center_freq->setRange(0, 2200*10e6);
+    center_freq->setSingleStep(10e4);
+
+    sample_rate = new QSpinBox();
+    sample_rate->setGroupSeparatorShown(true);
+    sample_rate->setRange(0, 3.5*10e6);
+
+    freq_corr = new QSpinBox();
+    freq_corr->setGroupSeparatorShown(true);
+    freq_corr->setRange(0, 100);
+
+    samples_per_read = new QSpinBox();
+    samples_per_read->setGroupSeparatorShown(true);
+    samples_per_read->setRange(0, 10e6);
 
     interactiveSettingForm->addRow("Center freq", center_freq);
     interactiveSettingForm->addRow("Sample rate", sample_rate);
