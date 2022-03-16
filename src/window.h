@@ -34,10 +34,10 @@ public:
     QPushButton *refresh;
     QPushButton *run;
 
-    QLineEdit *freqInput;
-    QLineEdit *fsInput;
-    QLineEdit *freqCorrInput;
-    QLineEdit *sprInput;
+    QLineEdit *center_freq;
+    QLineEdit *sample_rate;
+    QLineEdit *freq_corr;
+    QLineEdit *samples_per_read;
 private:
     QGridLayout* get_interactive_layout();
     QVBoxLayout* get_graphs_layout();

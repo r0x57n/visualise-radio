@@ -6,6 +6,7 @@
 #include <complex>
 #include <QApplication>
 #include <QObject>
+#include "logger.h"
 #include "device.h"
 #include "window.h"
 
@@ -40,6 +41,8 @@ public:
 
 private:
     unique_ptr<QApplication> app;
+    Logger log;
+
     void fft(vector<complex<double>> &data, complex<double> *out, int size);
     void toggle_async_read();
     void connect_signals();
@@ -57,9 +60,9 @@ private:
     void populate_window_device();
 
     /**
-     * Updates the SDR device
+     * Updates the SDR device, sets oldValue if not succesfull.
      */
-    void update(SDR::Settings setting, int value);
+    void update(SDR::Settings setting, int value, int oldValue);
 };
 
 #endif // APP_H_
