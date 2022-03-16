@@ -43,6 +43,7 @@ void Device::init() {
     tuner_bandwidth(0);
     freq_corr(60);
     samples_per_read(1024);
+    asyncReading = false;
 
     rtlsdr_reset_buffer(dev); // has to be reset before reading samples
 }
@@ -118,6 +119,9 @@ static void callback(uint8_t *buf, uint32_t len, void *ctx) {
     Device *dev = static_cast<Device*>(ctx);
     dev->samples.push_back(dev->bytes_to_iq(buf, len));
 
+    if (!dev->asyncReading)
+        rtlsdr_cancel_async(dev->device());
+
     emit dev->new_samples(); // send a QT signal that the device contains new samples
 }
 
@@ -127,12 +131,15 @@ void Device::read_samples_async() {
 }
 
 void Device::start_async() {
-    rtlsdr_read_async(dev, callback, this, 0, samplesPerRead);
+    asyncReading = true;
+
+    if (rtlsdr_read_async(dev, callback, this, 0, samplesPerRead))
+        asyncReading = false;
 }
 
-
 void Device::stop_async() {
-    rtlsdr_cancel_async(dev);
+    if (asyncReading)
+        asyncReading = false;
 }
 
 void Device::read_samples_sync() {

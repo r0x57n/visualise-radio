@@ -63,6 +63,8 @@ public:
      */
     vector<complex<double>> bytes_to_iq(uint8_t *buf, int size);
 
+    bool asyncReading; // flag to show if we're reading async currently
+
     /* Setters. */
     void center_freq(int freq);
     void sample_rate(int sr);

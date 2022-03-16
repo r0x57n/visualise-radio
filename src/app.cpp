@@ -18,7 +18,9 @@ App::App(int argc, char *argv[]) {
     window->show();
 }
 
-App::~App() { }
+App::~App() {
+    sdr->stop_async(); // stops async reading if any is running
+}
 
 void App::connect_signals() {
     /* Connects to the SDR device object's 'new_samples' QT signal. */
