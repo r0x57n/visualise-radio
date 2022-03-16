@@ -40,18 +40,18 @@ void App::connect_signals() {
                    sdr->center_freq());
         });
     QObject::connect(window->sample_rate, &QSpinBox::editingFinished, this, [this](){
-            update(SDR::Settings::fs,
-                   window->sample_rate->text().toInt(),
+            update(SDR::Settings::sampleRate,
+                   window->sample_rate->value(),
                    sdr->sample_rate());
         });
     QObject::connect(window->freq_corr, &QSpinBox::editingFinished, this, [this](){
             update(SDR::Settings::freqCorr,
-                   window->freq_corr->text().toInt(),
+                   window->freq_corr->value(),
                    sdr->freq_corr());
         });
     QObject::connect(window->samples_per_read, &QSpinBox::editingFinished, this, [this](){
-            update(SDR::Settings::spr,
-                   window->samples_per_read->text().toInt(),
+            update(SDR::Settings::samplesPerRead,
+                   window->samples_per_read->value(),
                    0);
         });
 }
@@ -156,22 +156,22 @@ void App::update(SDR::Settings setting, int value, int oldValue) {
         case SDR::Settings::centerFreq:
             if(sdr->center_freq(value)) {
                 window->center_freq->setValue(oldValue);
-                log << "couldn't set center frequency";
+                log << "Couldn't set center frequency.";
             }
             break;
         case SDR::Settings::freqCorr:
             if(sdr->freq_corr(value)) {
                 window->freq_corr->setValue(oldValue);
-                log << "couldn't set frequency correction";
+                log << "Couldn't set frequency correction.";
             }
             break;
-        case SDR::Settings::fs:
+        case SDR::Settings::sampleRate:
             if(sdr->sample_rate(value)) {
                 window->sample_rate->setValue(oldValue);
-                log << "couldn't set sample rate";
+                log << "Couldn't set sample rate.";
             }
             break;
-        case SDR::Settings::spr:
+        case SDR::Settings::samplesPerRead:
             sdr->samples_per_read(value);
             break;
         default:
