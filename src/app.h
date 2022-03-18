@@ -42,10 +42,15 @@ public:
 private:
     unique_ptr<QApplication> app;
     Logger log;
+    bool readingAsync;
 
     void fft(vector<complex<double>> &data, complex<double> *out, int size);
     void toggle_async_read();
+    void fetch_samples_once();
+
     void connect_signals();
+    void keyboard_signals();
+    void interface_signals();
 
     /**
      * Refreshes the graphs with the first vector sample inside of

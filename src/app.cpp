@@ -9,6 +9,7 @@ App::App(int argc, char *argv[]) {
     sdr = make_unique<Device>(0);
     app = make_unique<QApplication>(argc, argv);
     window = make_unique<Window>();
+    readingAsync = false;
 
     sdr->samples_per_read(pow(2, 16));
 
@@ -26,10 +27,36 @@ void App::connect_signals() {
     /* Connects to the SDR device object's 'new_samples' QT signal. */
     QObject::connect(sdr.get(), &Device::new_samples, this, &App::refresh_graph);
 
+    keyboard_signals();
+    interface_signals();
+}
+
+void App::keyboard_signals() {
+    /* Keyboard shortcuts */
+    QObject::connect(window.get(), &Window::start_async, this, &App::toggle_async_read);
+    QObject::connect(window.get(), &Window::fetch_once, this, [this](){
+            fetch_samples_once();
+        });
+    QObject::connect(window.get(), &Window::increase_center_freq, this, [this](){
+            window->center_freq->setValue(window->center_freq->value() +
+                                          window->center_freq->singleStep());
+            update(SDR::Settings::centerFreq,
+                   window->center_freq->value(),
+                   sdr->center_freq());
+        });
+    QObject::connect(window.get(), &Window::decrease_center_freq, this, [this](){
+            window->center_freq->setValue(window->center_freq->value() -
+                                          window->center_freq->singleStep());
+            update(SDR::Settings::centerFreq,
+                   window->center_freq->value(),
+                   sdr->center_freq());
+        });
+}
+
+void App::interface_signals() {
     /* Refresh/run buttons */
     QObject::connect(window->refresh, &QPushButton::pressed, this, [this](){
-            sdr->read_samples_sync();
-            refresh_graph();
+            fetch_samples_once();
         });
     QObject::connect(window->run, &QPushButton::pressed, this, &App::toggle_async_read);
 
@@ -68,14 +95,13 @@ int App::start() {
 }
 
 void App::toggle_async_read() {
-    bool running = true;
-
-    if(window->run->text() == "Run") {
+    if(!readingAsync) {
+        readingAsync = true;
         window->run->setText("Stop");
         window->refresh->setDisabled(true);
         sdr->read_samples_async();
     } else {
-        running = false;
+        readingAsync = false;
         window->run->setText("Run");
         window->refresh->setDisabled(false);
         sdr->stop_async();
@@ -176,5 +202,12 @@ void App::update(SDR::Settings setting, int value, int oldValue) {
             break;
         default:
             break;
+    }
+}
+
+void App::fetch_samples_once() {
+    if (!readingAsync) {
+        sdr->read_samples_sync();
+        refresh_graph();
     }
 }

@@ -45,8 +45,8 @@ QGridLayout* Window::get_interactive_layout() {
     interactiveSettingForm->addRow("Freq corr", freq_corr);
     interactiveSettingForm->addRow("Samples per read", samples_per_read);
 
-    refresh = new QPushButton("Refresh", this);
-    run = new QPushButton("Run", this);
+    refresh = new QPushButton("[F]etch once", this);
+    run = new QPushButton("[R]un", this);
 
     interactiveSettings->addLayout(interactiveSettingForm, 0, 0);
     interactiveButtons->addWidget(refresh, 1, 0);
@@ -89,4 +89,21 @@ QVBoxLayout* Window::get_graphs_layout() {
     graphsLayout->addWidget(freqDomain);
 
     return graphsLayout;
+}
+
+void Window::keyPressEvent(QKeyEvent *event) {
+    switch(event->key()) {
+        case Qt::Key_R:
+            emit start_async();
+        break;
+        case Qt::Key_F:
+            emit fetch_once();
+        break;
+        case Qt::Key_L:
+            emit increase_center_freq();
+        break;
+        case Qt::Key_H:
+            emit decrease_center_freq();
+        break;
+    }
 }
