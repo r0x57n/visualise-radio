@@ -43,7 +43,7 @@ public:
      * Reads "samplesPerRead" amount of samples into "samples" vector
      * synchronously.
      */
-    void read_samples_sync();
+    int read_samples_sync();
 
     /**
      * Starts async reading samples from device and stores

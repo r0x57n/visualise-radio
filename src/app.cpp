@@ -233,7 +233,9 @@ void App::update(SDR::Settings setting, int value, int oldValue) {
 
 void App::fetch_samples_once() {
     if (!readingAsync) {
-        sdr->read_samples_sync();
-        refresh_graph();
+        if(sdr->read_samples_sync())
+            log << "Couldn't read the requested amount.";
+        else
+            refresh_graph();
     }
 }
