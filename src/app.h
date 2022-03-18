@@ -52,6 +52,8 @@ private:
     void keyboard_signals();
     void interface_signals();
 
+    void init_device();
+
     /**
      * Refreshes the graphs with the first vector sample inside of
      * the SDR device's sample buffer.
@@ -62,7 +64,7 @@ private:
      * Populates settings fields in window with values
      * from the given rtl-sdr device.
      */
-    void populate_window_device();
+    void populate_interface();
 
     /**
      * Updates the SDR device, sets oldValue if not succesfull.

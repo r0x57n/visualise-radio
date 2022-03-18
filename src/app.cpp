@@ -6,21 +6,40 @@
 using std::make_unique;
 
 App::App(int argc, char *argv[]) {
+    /* SDR stuff */
     sdr = make_unique<Device>(0);
-    app = make_unique<QApplication>(argc, argv);
-    window = make_unique<Window>();
+    init_device();
     readingAsync = false;
 
-    sdr->samples_per_read(pow(2, 16));
+    /* Window stuff */
+    app = make_unique<QApplication>(argc, argv);
+    window = make_unique<Window>();
 
     connect_signals();
-    populate_window_device();
+    populate_interface();
 
     window->show();
 }
 
 App::~App() {
     sdr->stop_async(); // stops async reading if any is running
+}
+
+void App::init_device() {
+    // Set sane defaults
+    if(sdr->center_freq(99.8e6)) // SR P4 Östergötland
+        log << "couldn't set center frequency...";
+
+    if(sdr->sample_rate(1.024e6))
+        log << "couldn't set sample rate...";
+
+    if(sdr->tuner_bandwidth(0))
+       log << "couldn't set tuner bandwidth...";
+
+    if(sdr->freq_corr(60))
+       log << "couldn't set frequency correction...";
+
+    sdr->samples_per_read(pow(2, 16));
 }
 
 void App::connect_signals() {
@@ -83,7 +102,7 @@ void App::interface_signals() {
         });
 }
 
-void App::populate_window_device() {
+void App::populate_interface() {
     window->center_freq->setValue(sdr->center_freq());
     window->sample_rate->setValue(sdr->sample_rate());
     window->freq_corr->setValue(sdr->freq_corr());

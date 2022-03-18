@@ -37,20 +37,6 @@ void Device::init() {
         exit(EXIT_FAILURE);
     }
 
-    // Set sane defaults
-    if(center_freq(99.8e6)) // SR P4 Östergötland
-        fail("couldn't set center frequency...");
-
-    if(sample_rate(1.024e6))
-        fail("couldn't set sample rate...");
-
-    if(tuner_bandwidth(0))
-        fail("couldn't set tuner bandwidth...");
-
-    if(freq_corr(60))
-        fail("couldn't set frequency correction...");
-
-    samples_per_read(1024);
     asyncReading = false;
 
     rtlsdr_reset_buffer(dev); // has to be reset before reading samples
