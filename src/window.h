@@ -8,6 +8,7 @@
 #include <QSpinBox>
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_plot_curve.h>
+#include <qwt/qwt_plot_zoomer.h>
 #include <QKeyEvent>
 
 #include "device.h"
@@ -30,6 +31,7 @@ public:
 
     QwtPlot *timeDomain;
     QwtPlotCurve *timeCurve;
+    QwtPlotZoomer *timeZoomer;
     QwtPlot *freqDomain;
     QwtPlotCurve *freqCurve;
 
@@ -40,6 +42,8 @@ public:
     QSpinBox *sample_rate;
     QSpinBox *freq_corr;
     QSpinBox *samples_per_read;
+
+    bool unitializedZoom; // we need to set the soom base after we have some real values
 signals:
     void start_async();
     void fetch_once();

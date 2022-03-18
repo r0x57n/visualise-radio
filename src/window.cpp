@@ -11,6 +11,8 @@ Window::Window() {
 
     mainLayout->setColumnStretch(1, 3); // stretch the graphs
     setLayout(mainLayout);
+
+    unitializedZoom = true;
 }
 
 Window::~Window() { }
@@ -72,6 +74,8 @@ QVBoxLayout* Window::get_graphs_layout() {
 
     timeDomain->replot();
 
+    timeZoomer = new QwtPlotZoomer( timeDomain->canvas() );
+    timeZoomer->setAxes(QwtPlot::xBottom, QwtPlot::yRight);
 
     /* Graph for freq domain */
     freqDomain = new QwtPlot;
@@ -92,7 +96,7 @@ QVBoxLayout* Window::get_graphs_layout() {
 }
 
 void Window::keyPressEvent(QKeyEvent *event) {
-    switch(event->key()) {
+    switch (event->key()) {
         case Qt::Key_R:
             emit start_async();
         break;
@@ -100,10 +104,31 @@ void Window::keyPressEvent(QKeyEvent *event) {
             emit fetch_once();
         break;
         case Qt::Key_L:
-            emit increase_center_freq();
+            if (event->modifiers() & Qt::ShiftModifier) {
+                timeZoomer->moveBy(1, 0);
+            } else {
+                emit increase_center_freq();
+            }
         break;
         case Qt::Key_H:
-            emit decrease_center_freq();
+            if (event->modifiers() & Qt::ShiftModifier) {
+                timeZoomer->moveBy(-1, 0);
+            } else {
+                emit decrease_center_freq();
+            }
+        break;
+        case Qt::Key_K:
+            if (event->modifiers() & Qt::ShiftModifier) {
+                timeZoomer->zoom(100);
+            } else {
+                timeZoomer->zoom(1);
+            }
+        break;
+        case Qt::Key_J:
+            if (event->modifiers() & Qt::ShiftModifier)
+                timeZoomer->zoom(0);
+            else
+                timeZoomer->zoom(-1);
         break;
     }
 }

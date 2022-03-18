@@ -178,6 +178,13 @@ void App::refresh_graph() {
 
     window->timeDomain->replot();
     window->freqDomain->replot();
+
+    // We need to initalize the zoom base when we have real values in the plot
+    // for correct behaviour
+    if (window->unitializedZoom) {
+        window->timeZoomer->setZoomBase(true);
+        window->unitializedZoom = false;
+    }
 }
 
 void App::fft(vector<complex<double>>& data, complex<double> *out, int size) {
