@@ -123,12 +123,11 @@ int Device::find_devices_get_first_index() {
 
 static void callback(uint8_t *buf, uint32_t len, void *ctx) {
     Device *dev = static_cast<Device*>(ctx);
-    dev->samples.push_back(dev->bytes_to_iq(buf, len));
+    dev->samples.push_back(dev->raw_samples_to_iq(buf, len));
+    emit dev->new_samples(); // send a QT signal that the device contains new samples
 
     if (!dev->asyncReading)
         rtlsdr_cancel_async(dev->device());
-
-    emit dev->new_samples(); // send a QT signal that the device contains new samples
 }
 
 void Device::read_samples_async() {
@@ -155,20 +154,20 @@ int Device::read_samples_sync() {
     if (rtlsdr_read_sync(dev, buf, samplesPerRead, &read) || read != samplesPerRead)
         return 1;
 
-    samples.push_back(bytes_to_iq(buf, samplesPerRead));
+    samples.push_back(raw_samples_to_iq(buf, samplesPerRead));
 
     return 0;
 }
 
-vector<complex<double>> Device::bytes_to_iq(uint8_t *buf, int size) {
-    vector<complex<double>> iq;
+complex<double>* Device::raw_samples_to_iq(uint8_t *buf, int N) {
+    complex<double>* iq = (complex<double>*)malloc(N * sizeof(complex<double>));
 
-    for (int i = 0; i < size/2; i++) {
+    for (int i = 0; i < N/2; i++) {
         float byte1 = buf[2*i];
         float byte2 = buf[2*i+1];
 
         // convert to IQ sample and normalize
-        iq.push_back(complex<double> ((byte1 / 127.5 - 1.0), (byte2 / 127.5 - 1.0)));
+        iq[i] = complex<double> ((byte1 / 127.5 - 1.0), (byte2 / 127.5 - 1.0));
     }
 
     return iq;

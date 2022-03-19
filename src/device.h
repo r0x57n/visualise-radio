@@ -61,7 +61,7 @@ public:
      * raw samples, turn them into normalized IQ samples and
      * returns them.
      */
-    vector<complex<double>> bytes_to_iq(uint8_t *buf, int size);
+    complex<double>* raw_samples_to_iq(uint8_t *buf, int N);
 
     bool asyncReading; // flag to show if we're reading async currently
 
@@ -80,12 +80,16 @@ public:
     rtlsdr_dev_t* device();
     int find_devices_get_first_index();
 
-    vector<vector<complex<double>>> samples; // The samples that have been read.
+    vector<complex<double>*> samples; // The samples that have been read.
+    //complex<double> *samples;
 signals:
     void new_samples();
 private:
     rtlsdr_dev_t *dev;
     int index;
+
+    // We actually retrieve half of the requested amount since
+    // IQ samples are complex.
     int samplesPerRead;
 
     /**

@@ -41,6 +41,7 @@ QGridLayout* Window::get_interactive_layout() {
     samples_per_read = new QSpinBox();
     samples_per_read->setGroupSeparatorShown(true);
     samples_per_read->setRange(0, 10e6);
+    samples_per_read->setDisabled(true); // not implemented properly in device code
 
     interactiveSettingForm->addRow("Center freq", center_freq);
     interactiveSettingForm->addRow("Sample rate", sample_rate);
@@ -88,6 +89,9 @@ QVBoxLayout* Window::get_graphs_layout() {
     freqCurve->attach(freqDomain);
 
     freqDomain->replot();
+
+    freqZoomer = new QwtPlotZoomer( freqDomain->canvas() );
+    freqZoomer->setAxes(QwtPlot::xBottom, QwtPlot::yRight);
 
     graphsLayout->addWidget(timeDomain);
     graphsLayout->addWidget(freqDomain);

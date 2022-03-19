@@ -34,6 +34,7 @@ public:
     QwtPlotZoomer *timeZoomer;
     QwtPlot *freqDomain;
     QwtPlotCurve *freqCurve;
+    QwtPlotZoomer *freqZoomer;
 
     QPushButton *refresh;
     QPushButton *run;

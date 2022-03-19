@@ -53,9 +53,9 @@ private:
 
     void init_device();
 
-    vector<double>* hann_window(vector<double> *samples, int size);
-    void fft(vector<complex<double>> &data, complex<double> *out, int size);
-    void rotate(double* samples, int size);
+    vector<double>* hann_window(vector<double> *samples, int N);
+    void fft(complex<double> *iqSamples, complex<double> *out, int N);
+    void rotate(complex<double> *freqData, int N);
 
     /**
      * Refreshes the graphs with the first vector sample inside of

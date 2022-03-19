@@ -27,7 +27,9 @@ App::~App() {
 
 void App::init_device() {
     // Set sane defaults
-    if(sdr->center_freq(99.8e6)) // SR P4 Östergötland
+    // if(sdr->center_freq(99.8e6)) // SR P4 Östergötland
+    //     log << "couldn't set center frequency...";
+    if(sdr->center_freq(101.1e6)) // SR P4 Östergötland
         log << "couldn't set center frequency...";
 
     if(sdr->sample_rate(1.024e6))
@@ -128,41 +130,41 @@ void App::toggle_async_read() {
 }
 
 void App::refresh_graph() {
-    int N = sdr->samples.front().size();
+    int N = sdr->samples_per_read() / 2; // IQ samples are complex
 
-    vector<complex<double>> samps = sdr->samples.front();
-    sdr->samples.erase(sdr->samples.begin());
+    complex<double>* samples = sdr->samples.front();
 
     double xData[N];
-    double yDataTime[N];
-    double yDataFreq[N];
-
+    double timePlotData[N];
     for (int i = 0; i < (int)N; i++) {
         xData[i] = i;
-        yDataTime[i] = samps[i].real();
+        timePlotData[i] = samples[i].real();
     }
 
-    // Setup x range for freq domain plot
-    int Fs = sdr->sample_rate();
+    // Setup x range for frequency domain plot
+    int sampleRate = sdr->sample_rate();
+    int centerFreq = sdr->center_freq();
     vector<double> xDataFreq;
-    for (int i = Fs/-2; i <= Fs/2; i += Fs/N) {
-        xDataFreq.push_back(i);
+    for (int i = sampleRate/-2; i <= sampleRate/2; i += sampleRate/N) {
+        xDataFreq.push_back(centerFreq + i);
     }
-    double* xDataFreqPoint = &xDataFreq[0];
 
     // Performs the FFT
-    complex<double> out[N];
-    fft(samps, out, N);
+    complex<double> freqData[N];
+    fft(samples, freqData, N);
 
+    rotate(freqData, N);
+
+    double freqPlotData[N];
     for (int i = 0; i < N; i++) {
-        yDataFreq[i] = abs(out[i]);
+        freqPlotData[i] = abs(freqData[i]);
     }
 
-    rotate(yDataFreq, N);
+    double* xDataFreqPoint = &xDataFreq[0];
 
     // Display the graphs
-    window->timeCurve->setSamples(xData, yDataTime, N);
-    window->freqCurve->setSamples(xDataFreqPoint, yDataFreq, N);
+    window->timeCurve->setSamples(xData, timePlotData, N);
+    window->freqCurve->setSamples(xDataFreqPoint, freqPlotData, N);
 
     window->timeDomain->replot();
     window->freqDomain->replot();
@@ -171,8 +173,12 @@ void App::refresh_graph() {
     // for correct behaviour
     if (window->unitializedZoom) {
         window->timeZoomer->setZoomBase(true);
+        window->freqZoomer->setZoomBase(true);
         window->unitializedZoom = false;
     }
+
+    free(samples);
+    sdr->samples.erase(sdr->samples.begin());
 }
 
 vector<double>* App::hann_window(vector<double> *samples, int N) {
@@ -182,36 +188,30 @@ vector<double>* App::hann_window(vector<double> *samples, int N) {
     // }
 }
 
-void App::rotate(double *samples, int N) {
-    double rotated[N];
+void App::rotate(complex<double> *freqData, int N) {
+    // see https://pysdr.org/content/frequency_domain.html#fft-in-python
 
-    for (int i = 0; i <= N/2; i++) {
-        int src = i;
-        int dst = i + N/2;
-        rotated[dst] = samples[src];
-    }
+    complex<double> temp[N];
+    memcpy(temp, freqData, N*sizeof(complex<double>));
 
-    for (int i = (N/2) + 1; i < N; i++) {
-        int src = i;
-        int dst = i - N/2;
-        rotated[dst] = samples[src];
-    }
+    // rotate right segment
+    memcpy(freqData, &freqData[N/2], (N/2)*sizeof(complex<double>));
 
-    memcpy(&samples[0], &rotated[0], N*sizeof(double));
+    // rotate left segment
+    memcpy(&freqData[N/2], temp, (N/2)*sizeof(complex<double>));
 }
 
-void App::fft(vector<complex<double>>& data, complex<double> *out, int size) {
-    int N = data.size();
-    fftw_complex *in, *outTemp;
+void App::fft(complex<double> *iqSamples, complex<double> *out, int N) {
+    fftw_complex *in, *freqData;
     fftw_plan p;
 
-    in = reinterpret_cast<fftw_complex*>(&data[0]);
-    outTemp = reinterpret_cast<fftw_complex*>(out);
+    in = reinterpret_cast<fftw_complex*>(iqSamples);
+    freqData = reinterpret_cast<fftw_complex*>(out);
 
-    p = fftw_plan_dft_1d(N, in, outTemp, FFTW_FORWARD, FFTW_ESTIMATE);
+    p = fftw_plan_dft_1d(N, in, freqData, FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(p);
 
-    memcpy(out, outTemp, size);
+    memcpy(out, freqData, N*sizeof(complex<double>));
 
     fftw_destroy_plan(p);
 }
