@@ -81,7 +81,6 @@ public:
     int find_devices_get_first_index();
 
     vector<complex<double>*> samples; // The samples that have been read.
-    //complex<double> *samples;
 signals:
     void new_samples();
 private:

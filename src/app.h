@@ -53,7 +53,7 @@ private:
 
     void init_device();
 
-    vector<double>* hann_window(vector<double> *samples, int N);
+    void hamming_window(complex<double> *samples, int N);
     void fft(complex<double> *iqSamples, complex<double> *out, int N);
     void rotate(complex<double> *freqData, int N);
 

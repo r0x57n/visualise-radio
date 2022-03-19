@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <complex.h>
+#include <math.h>
 
 using std::make_unique;
 
@@ -133,6 +134,7 @@ void App::refresh_graph() {
     int N = sdr->samples_per_read() / 2; // IQ samples are complex
 
     complex<double>* samples = sdr->samples.front();
+    hamming_window(samples, N);
 
     double xData[N];
     double timePlotData[N];
@@ -181,11 +183,19 @@ void App::refresh_graph() {
     sdr->samples.erase(sdr->samples.begin());
 }
 
-vector<double>* App::hann_window(vector<double> *samples, int N) {
-    // Apply a hann window to the samples
-    // for (int i = 0; i < N; i++) {
-    //     xDataFreq.push_back(N * xDataFreq[0] * )
-    // }
+void App::hamming_window(complex<double> *samples, int N) {
+    // see https://pysdr.org/content/frequency_domain.html#windowing
+    // also https://en.wikipedia.org/wiki/Window_function#Hann_and_Hamming_windows
+
+    // Apply a hamming window to the samples
+    double pi = std::acos(-1);
+    //double a0 = 25.0/46.0;
+    double a0 = 0.54;
+
+    for (int i = 0; i < N; i++) {
+        double multiplier = a0 * (1 - std::cos(2*pi*i/N));
+        samples[i] *= multiplier;
+    }
 }
 
 void App::rotate(complex<double> *freqData, int N) {
