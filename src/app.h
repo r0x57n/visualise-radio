@@ -44,7 +44,6 @@ private:
     Logger log;
     bool readingAsync;
 
-    void fft(vector<complex<double>> &data, complex<double> *out, int size);
     void toggle_async_read();
     void fetch_samples_once();
 
@@ -53,6 +52,10 @@ private:
     void interface_signals();
 
     void init_device();
+
+    vector<double>* hann_window(vector<double> *samples, int size);
+    void fft(vector<complex<double>> &data, complex<double> *out, int size);
+    void rotate(double* samples, int size);
 
     /**
      * Refreshes the graphs with the first vector sample inside of

@@ -22,7 +22,7 @@ namespace SDR {
  * asynchrously.
  */
 class Device : public QObject {
-        Q_OBJECT
+    Q_OBJECT
 public:
     /**
      * Sets index to the first found device, calls init().
@@ -80,7 +80,7 @@ public:
     rtlsdr_dev_t* device();
     int find_devices_get_first_index();
 
-    vector<vector<complex<double>>> samples; // The samples that have been read.als:
+    vector<vector<complex<double>>> samples; // The samples that have been read.
 signals:
     void new_samples();
 private:

@@ -150,7 +150,7 @@ void App::refresh_graph() {
     }
     double* xDataFreqPoint = &xDataFreq[0];
 
-    // Perform FFT on the samples to get the frequency domain representation.
+    // Performs the FFT
     complex<double> out[N];
     fft(samps, out, N);
 
@@ -158,23 +158,11 @@ void App::refresh_graph() {
         yDataFreq[i] = abs(out[i]);
     }
 
-    // Rotate the values.
-    double yDataFreqShifted[N];
-    for (int i = 0; i <= N/2; i++) {
-        int src = i;
-        int dst = i + N/2;
-        yDataFreqShifted[dst] = yDataFreq[src];
-    }
-
-    for (int i = (N/2) + 1; i < N; i++) {
-        int src = i;
-        int dst = i - N/2;
-        yDataFreqShifted[dst] = yDataFreq[src];
-    }
+    rotate(yDataFreq, N);
 
     // Display the graphs
     window->timeCurve->setSamples(xData, yDataTime, N);
-    window->freqCurve->setSamples(xDataFreqPoint, yDataFreqShifted, N);
+    window->freqCurve->setSamples(xDataFreqPoint, yDataFreq, N);
 
     window->timeDomain->replot();
     window->freqDomain->replot();
@@ -185,6 +173,31 @@ void App::refresh_graph() {
         window->timeZoomer->setZoomBase(true);
         window->unitializedZoom = false;
     }
+}
+
+vector<double>* App::hann_window(vector<double> *samples, int N) {
+    // Apply a hann window to the samples
+    // for (int i = 0; i < N; i++) {
+    //     xDataFreq.push_back(N * xDataFreq[0] * )
+    // }
+}
+
+void App::rotate(double *samples, int N) {
+    double rotated[N];
+
+    for (int i = 0; i <= N/2; i++) {
+        int src = i;
+        int dst = i + N/2;
+        rotated[dst] = samples[src];
+    }
+
+    for (int i = (N/2) + 1; i < N; i++) {
+        int src = i;
+        int dst = i - N/2;
+        rotated[dst] = samples[src];
+    }
+
+    memcpy(&samples[0], &rotated[0], N*sizeof(double));
 }
 
 void App::fft(vector<complex<double>>& data, complex<double> *out, int size) {

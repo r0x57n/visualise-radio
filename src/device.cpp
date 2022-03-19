@@ -152,10 +152,11 @@ int Device::read_samples_sync() {
     uint8_t *buf = (uint8_t*)malloc(samplesPerRead * sizeof(uint8_t));
     int read = 0;
 
-    if (rtlsdr_read_sync(dev, buf, samplesPerRead, &read) < 0 || read != samplesPerRead)
+    if (rtlsdr_read_sync(dev, buf, samplesPerRead, &read) || read != samplesPerRead)
         return 1;
 
     samples.push_back(bytes_to_iq(buf, samplesPerRead));
+
     return 0;
 }
 
