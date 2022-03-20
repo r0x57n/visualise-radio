@@ -148,7 +148,7 @@ void Device::stop_async() {
 }
 
 int Device::read_samples_sync() {
-    uint8_t *buf = (uint8_t*)malloc(samplesPerRead * sizeof(uint8_t));
+    uint8_t *buf = new uint8_t[samplesPerRead];
     int read = 0;
 
     if (rtlsdr_read_sync(dev, buf, samplesPerRead, &read) || read != samplesPerRead)
@@ -160,7 +160,7 @@ int Device::read_samples_sync() {
 }
 
 complex<double>* Device::raw_samples_to_iq(uint8_t *buf, int N) {
-    complex<double>* iq = (complex<double>*)malloc(N * sizeof(complex<double>));
+    complex<double>* iq = new complex<double>[N];
 
     for (int i = 0; i < N/2; i++) {
         float byte1 = buf[2*i];

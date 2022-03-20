@@ -14,7 +14,7 @@ find_package(Qt5 COMPONENTS
 
 find_package(Qwt REQUIRED)
 
-set(SRC_LIST src/main.cpp src/app.cpp src/device.cpp src/window.cpp src/logger.cpp)
+set(SRC_LIST src/main.cpp src/app.cpp src/device.cpp src/window.cpp src/logger.cpp src/dsp.cpp)
 set(LIBS librtlsdr.so fftw3 qwt Qt5::Widgets)
 
 set(CMAKE_AUTOMOC ON)

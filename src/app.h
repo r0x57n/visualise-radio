@@ -9,9 +9,8 @@
 #include "logger.h"
 #include "device.h"
 #include "window.h"
+#include "dsp.h"
 
-using std::vector;
-using std::complex;
 using std::unique_ptr;
 
 /**
@@ -52,10 +51,6 @@ private:
     void interface_signals();
 
     void init_device();
-
-    void hamming_window(complex<double> *samples, int N);
-    void fft(complex<double> *iqSamples, complex<double> *out, int N);
-    void rotate(complex<double> *freqData, int N);
 
     /**
      * Refreshes the graphs with the first vector sample inside of
