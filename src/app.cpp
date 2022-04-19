@@ -1,7 +1,5 @@
 #include "app.h"
 
-#include <math.h>
-
 using std::make_unique;
 
 App::App(int argc, char *argv[]) {
@@ -18,6 +16,12 @@ App::App(int argc, char *argv[]) {
     populate_interface();
 
     window->show();
+
+    // spectrogram
+    QMainWindow *spectroWindow = new QMainWindow();
+    spectrogram = make_unique<Spectrogram>();
+    spectroWindow->setCentralWidget(spectrogram.get());
+    //spectroWindow->show();
 }
 
 App::~App() {
@@ -28,7 +32,7 @@ void App::init_device() {
     // Set sane defaults
     // if(sdr->center_freq(99.8e6)) // SR P4 Östergötland
     //     log << "couldn't set center frequency...";
-    if(sdr->center_freq(101.1e6)) // SR P4 Östergötland
+    if(sdr->center_freq(101.1e6))
         log << "couldn't set center frequency...";
 
     if(sdr->sample_rate(1.024e6))
@@ -147,14 +151,14 @@ void App::refresh_graph() {
     int sampleRate = sdr->sample_rate();
     int centerFreq = sdr->center_freq();
     vector<double> xDataFreq;
-    for (int i = sampleRate/-2; i <= sampleRate/2; i += sampleRate/N) {
+    for (int i = -(sampleRate/2); i <= sampleRate/2; i += sampleRate/N) {
         xDataFreq.push_back(centerFreq + i);
     }
 
-    // Perform the fft and rotate results
+    // Perform the fft and shift results
     complex<double> freqData[N];
     dsp::fft(samples, freqData, N);
-    dsp::fftshift(freqData, N);
+    dsp::fft_shift(freqData, N);
 
     double freqPlotData[N];
     for (int i = 0; i < N; i++) {
@@ -166,12 +170,11 @@ void App::refresh_graph() {
     // Display the graphs
     window->timeCurve->setSamples(xData, timePlotData, N);
     window->freqCurve->setSamples(xDataFreqPoint, freqPlotData, N);
-
     window->timeDomain->replot();
     window->freqDomain->replot();
 
-    // We need to initalize the zoom base when we have real values in the plot
-    // for correct behaviour
+    /* We need to initalize the zoom base when we have real values in the plot
+     * for correct zooming behaviour */
     if (window->unitializedZoom) {
         window->timeZoomer->setZoomBase(true);
         window->freqZoomer->setZoomBase(true);

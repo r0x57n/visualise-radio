@@ -36,7 +36,7 @@ void dsp::fft(complex<double> *iqSamples, complex<double> *out, int N) {
 }
 
 
-void dsp::fftshift(complex<double> *freqData, int N) {
+void dsp::fft_shift(complex<double> *freqData, int N) {
     // see https://pysdr.org/content/frequency_domain.html#fft-in-python
 
     complex<double> temp[N];

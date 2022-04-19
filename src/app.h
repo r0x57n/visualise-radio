@@ -1,14 +1,15 @@
 #ifndef APP_H_
 #define APP_H_
 
-#include <fftw3.h>
 #include <vector>
 #include <complex>
 #include <QApplication>
+#include <QMainWindow>
 #include <QObject>
 #include "logger.h"
 #include "device.h"
 #include "window.h"
+#include "spectrogram.h"
 #include "dsp.h"
 
 using std::unique_ptr;
@@ -36,7 +37,8 @@ public:
     int start();
 
     unique_ptr<Device> sdr; // The rtl-sdr device.
-    unique_ptr<Window> window; // The application window (a QWidget).
+    unique_ptr<Window> window; // The application window (QWidget).
+    unique_ptr<Spectrogram> spectrogram; // A separate spectogram window (QWidget).
 
 private:
     unique_ptr<QApplication> app;

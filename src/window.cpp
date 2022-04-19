@@ -78,6 +78,8 @@ QVBoxLayout* Window::get_graphs_layout() {
     timeZoomer = new QwtPlotZoomer( timeDomain->canvas() );
     timeZoomer->setAxes(QwtPlot::xBottom, QwtPlot::yRight);
 
+    graphsLayout->addWidget(timeDomain);
+
     /* Graph for freq domain */
     freqDomain = new QwtPlot;
     freqDomain->setTitle("Freq Domain");
@@ -93,7 +95,6 @@ QVBoxLayout* Window::get_graphs_layout() {
     freqZoomer = new QwtPlotZoomer( freqDomain->canvas() );
     freqZoomer->setAxes(QwtPlot::xBottom, QwtPlot::yRight);
 
-    graphsLayout->addWidget(timeDomain);
     graphsLayout->addWidget(freqDomain);
 
     return graphsLayout;
